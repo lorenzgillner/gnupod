@@ -175,7 +175,7 @@ use constant MODE_PARSED    => 300;
 		$self->{fbimg}->{source_size} = (-s $file) or return 0; # no thanks
 		foreach my $mr (@$mode) {
 			my $buff = '';
-			open(IM, "-|") || exec("convert", "-resize", "$mr->{height}x$mr->{width}", "-background", $args{bgcolor}, "-gravity", "center", "-extent", "$mr->{height}x$mr->{width}", "-depth", "8", $file, "RGB:-");
+			open(IM, "-|") || exec("magick", $file, "-resize", "$mr->{height}x$mr->{width}", "-background", $args{bgcolor}, "-gravity", "center", "-extent", "$mr->{height}x$mr->{width}", "-depth", "8", "RGB:-");
 			binmode(IM);
 			while(<IM>) { $buff .= $_  }
 			close(IM);
