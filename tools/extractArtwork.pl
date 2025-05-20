@@ -1,5 +1,7 @@
 #!/usr/bin/perl
+
 use strict;
+use warnings;
 
 use GNUpod::XMLhelper;
 use GNUpod::FooBar;

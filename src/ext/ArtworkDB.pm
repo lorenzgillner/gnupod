@@ -22,6 +22,7 @@ package GNUpod::ArtworkDB;
 # This product is not supported/written/published by Apple!
 
 use strict;
+use warnings;
 use GNUpod::iTunesDB;
 use Carp;
 use Digest::MD5;

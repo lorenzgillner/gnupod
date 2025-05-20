@@ -30,6 +30,7 @@ package GNUpod::QTfile;
 #
 
 use strict;
+use warnings;
 use GNUpod::FooBar;
 use vars qw(%hchild %reth @LEVELA);
 
@@ -62,15 +63,15 @@ $hchild{'cmt'} = 8;
 $hchild{'disk'} = 8;
 $hchild{'wrt'} = 8;
 $hchild{'dinf'} = 8;
-$hchild{'©grp'} = 8;
-$hchild{'©too'} = 8;
-$hchild{'©nam'} = 8;
-$hchild{'©ART'} = 8;
-$hchild{'©alb'} = 8;
-$hchild{'©gen'} = 8;
-$hchild{'©cmt'} = 8;
-$hchild{'©wrt'} = 8;
-$hchild{'©day'} = 8;
+$hchild{'ï¿½grp'} = 8;
+$hchild{'ï¿½too'} = 8;
+$hchild{'ï¿½nam'} = 8;
+$hchild{'ï¿½ART'} = 8;
+$hchild{'ï¿½alb'} = 8;
+$hchild{'ï¿½gen'} = 8;
+$hchild{'ï¿½cmt'} = 8;
+$hchild{'ï¿½wrt'} = 8;
+$hchild{'ï¿½day'} = 8;
 $hchild{'trkn'} = 8;
 $hchild{'tmpo'} = 8;
 $hchild{'disk'} = 8;

@@ -27,6 +27,7 @@
 
 package GNUpod::iTunesDB;
 use strict;
+use warnings;
 use Unicode::String;
 use GNUpod::FooBar;
 use File::Glob ':glob';

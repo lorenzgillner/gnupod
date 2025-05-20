@@ -29,6 +29,7 @@
 #
 #
 use strict;
+use warnings;
 use Getopt::Long;
 
 use constant LEN => 1; #DunnoTouch

@@ -21,7 +21,7 @@ package GNUpod::FileMagic;
 #
 # This product is not supported/written/published by Apple!
 use strict;
-#use warnings;
+use warnings;
 use Unicode::String;
 use MP3::Info qw(:all);
 use GNUpod::FooBar;

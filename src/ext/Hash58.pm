@@ -22,6 +22,7 @@ package GNUpod::Hash58;
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.#
 
 use strict;
+use warnings;
 use Digest::SHA;
 
 use constant OFFSET_UNK30  => 0x30;     # Will set this to 1

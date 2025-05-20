@@ -22,6 +22,7 @@ package GNUpod::FooBar;
 # This product is not supported/written/published by Apple!
 
 use strict;
+use warnings;
 use Digest::MD5;
 use File::Glob ':glob';
 use GNUpod::iTunesDB;
