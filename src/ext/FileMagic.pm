@@ -1,4 +1,5 @@
 package GNUpod::FileMagic;
+
 #  Copyright (C) 2002-2007 Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
@@ -30,8 +31,6 @@ use GNUpod::QTfile;
 use constant MEDIATYPE_AUDIO => 0x01;
 use constant MEDIATYPE_VIDEO => 0x02;
 
-
-
 =pod
 
 =head1 NAME
@@ -51,19 +50,19 @@ GNUpod::FileMagic - Convert media files to iPod compatible formats and/or extrac
 # done!
 #
 
-my $NN_HEADERS = {'MThd' => { encoder=>'gnupod-convert-MIDI.pl', ftyp=>'MIDI'},
-                  'fLaC' => { encoder=>'gnupod-convert-FLAC.pl', ftyp=>'FLAC'},
-                  'OggS' => { encoder=>'gnupod-convert-OGG.pl',  ftyp=>'OGG' },
-                  'MAC ' => { encoder=>'gnupod-convert-APE.pl',  ftyp=>'APE' },
-                  'RIFF' => { encoder=>'gnupod-convert-RIFF.pl', ftyp=>'RIFF', magic2=>'AVI '}};
-
-
-
+my $NN_HEADERS = {
+    'MThd' => { encoder => 'gnupod-convert-MIDI.pl', ftyp => 'MIDI' },
+    'fLaC' => { encoder => 'gnupod-convert-FLAC.pl', ftyp => 'FLAC' },
+    'OggS' => { encoder => 'gnupod-convert-OGG.pl',  ftyp => 'OGG' },
+    'MAC ' => { encoder => 'gnupod-convert-APE.pl',  ftyp => 'APE' },
+    'RIFF' =>
+      { encoder => 'gnupod-convert-RIFF.pl', ftyp => 'RIFF', magic2 => 'AVI ' }
+};
 
 BEGIN {
- MP3::Info::use_winamp_genres(); # Import winamp genres
- MP3::Info::use_mp3_utf8(1);     # Force-Enable UTF8 support
-  open(NULLFH, "> /dev/null") or die "Could not open /dev/null, $!\n";
+    MP3::Info::use_winamp_genres();    # Import winamp genres
+    MP3::Info::use_mp3_utf8(1);        # Force-Enable UTF8 support
+    open( NULLFH, "> /dev/null" ) or die "Could not open /dev/null, $!\n";
 }
 
 ########################################################################
@@ -106,28 +105,37 @@ Example:
 =cut
 
 sub wtf_is {
-	my($file, $flags, $con) = @_;
-	
-	if(-d $file) { #Don't add dirs
-		warn "FileMagic.pm: '$file' is a directory!\n";
-	}
-	elsif(!-r $file) {
-		warn "FileMagic.pm: Can't read '$file'\n";
-	}
-	elsif(my $nnat  = __is_NonNative($file,$flags,$con)) { #Handle non-native formats
-		return($nnat->{ref}, {ftyp=>$nnat->{codec}}, $nnat->{encoder});
-	}
-	elsif(my $xqt = __is_qt($file,$flags)) {
-		return ($xqt->{ref},  {ftyp=>$xqt->{codec}, format=>"m4a", extension=>"m4a|m4p|m4b|mp4|m4v"});
-	}
-	elsif(my $h = __is_pcm($file,$flags)) {
-		return ($h, {ftyp=>"PCM", format=>"wav"});
-	}
-	elsif(my $h = __is_mp3($file,$flags)) {
-		return ($h, {ftyp=>"MP3", format=>"mp3"});
-	}
-	#Still no luck..
-	return (undef, undef, undef);
+    my ( $file, $flags, $con ) = @_;
+
+    if ( -d $file ) {    #Don't add dirs
+        warn "FileMagic.pm: '$file' is a directory!\n";
+    }
+    elsif ( !-r $file ) {
+        warn "FileMagic.pm: Can't read '$file'\n";
+    }
+    elsif ( my $nnat = __is_NonNative( $file, $flags, $con ) )
+    {                    #Handle non-native formats
+        return ( $nnat->{ref}, { ftyp => $nnat->{codec} }, $nnat->{encoder} );
+    }
+    elsif ( my $xqt = __is_qt( $file, $flags ) ) {
+        return (
+            $xqt->{ref},
+            {
+                ftyp      => $xqt->{codec},
+                format    => "m4a",
+                extension => "m4a|m4p|m4b|mp4|m4v"
+            }
+        );
+    }
+    elsif ( my $h = __is_pcm( $file, $flags ) ) {
+        return ( $h, { ftyp => "PCM", format => "wav" } );
+    }
+    elsif ( my $h = __is_mp3( $file, $flags ) ) {
+        return ( $h, { ftyp => "MP3", format => "mp3" } );
+    }
+
+    #Still no luck..
+    return ( undef, undef, undef );
 }
 
 ########################################################################
@@ -148,58 +156,61 @@ Returns a hash with:
 =cut
 
 sub __is_NonNative {
-	my($file, $flags, $con) = @_;
-	return undef unless $flags->{decode}; #Decoder is OFF per default!
-	
-	my $size = (-s $file);
-	my $magic = undef;
-	my $magic2= undef;
-	
-	return undef if $size < 12;
-	open(TNN, $file) or return undef;
-	binmode(TNN);
-	seek(TNN,0,0);
-	read(TNN,$magic,4);
-	seek(TNN,8,0);
-	read(TNN,$magic2,4);
-	close(TNN);
-	
-	
-	my $encoder = $NN_HEADERS->{$magic}->{encoder};
-	return undef unless $encoder; # No encoder -> Not supported magic
-	
-	if(defined($NN_HEADERS->{$magic}->{magic2}) && $magic2 ne $NN_HEADERS->{$magic}->{magic2}) {
-		# Submagic failed (currently only used for RIFF-AVI)
-		return undef;
-	}
-	
-	#Still here? -> We know how to decode this stuff
-	my $metastuff = converter_readmeta($encoder, $file, $con);
-	return undef unless ref($metastuff) eq "HASH"; #Failed .. hmm
-	
-	my %rh = ();
-	my $cf = ((split(/\//,$file))[-1]);
-	my @songa = pss($metastuff->{_TRACKNUM});
-	
-	# Use track ReplayGain by default, use album ReplayGain if requested
-	my $rgtag = "_REPLAYGAIN_TRACK_GAIN";
-	$rgtag = "_REPLAYGAIN_ALBUM_GAIN" if($flags->{'rgalbum'});
+    my ( $file, $flags, $con ) = @_;
+    return undef unless $flags->{decode};    #Decoder is OFF per default!
 
-	$rh{artist}    = getutf8($metastuff->{_ARTIST} || "Unknown Artist");
-	$rh{album}     = getutf8($metastuff->{_ALBUM}  || "Unknown Album");
-	$rh{title}     = getutf8($metastuff->{_TITLE}  || $cf || "Unknown Title");
-	$rh{genre}     = getutf8($metastuff->{_GENRE}  || "");
-	$rh{songs}     = int($songa[1]);
-	$rh{songnum}   = int($songa[0]);
-	$rh{comment}   = getutf8($metastuff->{_COMMENT} || $metastuff->{FORMAT}." file");
-	$rh{fdesc}     = getutf8($metastuff->{_VENDOR}  || "Converted using $encoder");
-	$rh{soundcheck} = _parse_db_to_soundcheck($metastuff->{$rgtag}) || "";
-	$rh{mediatype} = int($metastuff->{_MEDIATYPE}   || MEDIATYPE_AUDIO);
-	return {ref=>\%rh, encoder=>$encoder, codec=>$NN_HEADERS->{$magic}->{ftyp} };
+    my $size   = ( -s $file );
+    my $magic  = undef;
+    my $magic2 = undef;
+
+    return undef if $size < 12;
+    open( TNN, $file ) or return undef;
+    binmode(TNN);
+    seek( TNN, 0, 0 );
+    read( TNN, $magic, 4 );
+    seek( TNN, 8, 0 );
+    read( TNN, $magic2, 4 );
+    close(TNN);
+
+    my $encoder = $NN_HEADERS->{$magic}->{encoder};
+    return undef unless $encoder;    # No encoder -> Not supported magic
+
+    if ( defined( $NN_HEADERS->{$magic}->{magic2} )
+        && $magic2 ne $NN_HEADERS->{$magic}->{magic2} )
+    {
+        # Submagic failed (currently only used for RIFF-AVI)
+        return undef;
+    }
+
+    #Still here? -> We know how to decode this stuff
+    my $metastuff = converter_readmeta( $encoder, $file, $con );
+    return undef unless ref($metastuff) eq "HASH";    #Failed .. hmm
+
+    my %rh    = ();
+    my $cf    = ( ( split( /\//, $file ) )[-1] );
+    my @songa = pss( $metastuff->{_TRACKNUM} );
+
+    # Use track ReplayGain by default, use album ReplayGain if requested
+    my $rgtag = "_REPLAYGAIN_TRACK_GAIN";
+    $rgtag = "_REPLAYGAIN_ALBUM_GAIN" if ( $flags->{'rgalbum'} );
+
+    $rh{artist}  = getutf8( $metastuff->{_ARTIST} || "Unknown Artist" );
+    $rh{album}   = getutf8( $metastuff->{_ALBUM}  || "Unknown Album" );
+    $rh{title}   = getutf8( $metastuff->{_TITLE}  || $cf || "Unknown Title" );
+    $rh{genre}   = getutf8( $metastuff->{_GENRE}  || "" );
+    $rh{songs}   = int( $songa[1] );
+    $rh{songnum} = int( $songa[0] );
+    $rh{comment} =
+      getutf8( $metastuff->{_COMMENT} || $metastuff->{FORMAT} . " file" );
+    $rh{fdesc} = getutf8( $metastuff->{_VENDOR} || "Converted using $encoder" );
+    $rh{soundcheck} = _parse_db_to_soundcheck( $metastuff->{$rgtag} ) || "";
+    $rh{mediatype}  = int( $metastuff->{_MEDIATYPE} || MEDIATYPE_AUDIO );
+    return {
+        ref     => \%rh,
+        encoder => $encoder,
+        codec   => $NN_HEADERS->{$magic}->{ftyp}
+    };
 }
-
-
-
 
 #######################################################################
 # Check if the QTparser thinks, it's a QT-AAC (= m4a) file
@@ -215,36 +226,36 @@ Returns undef if FILE is no QT file. Otherwise returns a hash with:
 =cut
 
 sub __is_qt {
- my($file) = @_;
- my $ret = GNUpod::QTfile::parsefile($file);
- return undef unless $ret; #No QT file
+    my ($file) = @_;
+    my $ret = GNUpod::QTfile::parsefile($file);
+    return undef unless $ret;    #No QT file
 
- my %rh = ();
- if($ret->{time} < 1) {
-  warn "QTfile parsing failed, (expected \$ret->{time} >= 0)!\n";
-  warn "Looks like we got no sound stream.. hmm..\n";
-  warn "You found a bug - send an email to: pab\@blinkenlights.ch\n";
-  return undef;
- }
+    my %rh = ();
+    if ( $ret->{time} < 1 ) {
+        warn "QTfile parsing failed, (expected \$ret->{time} >= 0)!\n";
+        warn "Looks like we got no sound stream.. hmm..\n";
+        warn "You found a bug - send an email to: pab\@blinkenlights.ch\n";
+        return undef;
+    }
 
- my $cf = ((split(/\//,$file))[-1]);
- $rh{songs}      = int($ret->{tracks});
- $rh{songnum}    = int($ret->{tracknum});
- $rh{cds}        = int($ret->{cds});
- $rh{cdnum}      = int($ret->{cdnum});
- $rh{srate}      = int($ret->{srate});
- $rh{time}       = int($ret->{time});
- $rh{bitrate}    = int($ret->{bitrate});
- $rh{filesize}   = int($ret->{filesize});
- $rh{fdesc}      = getutf8($ret->{fdesc});
- $rh{artist}     = getutf8($ret->{artist}   || "Unknown Artist");
- $rh{album}      = getutf8($ret->{album}    || "Unknown Album");
- $rh{title}      = getutf8($ret->{title}    || $cf || "Unknown Title");
- $rh{genre}      = _get_genre( getutf8($ret->{genre} || $ret->{gnre} || "") );
- $rh{composer}   = getutf8($ret->{composer} || "");
- $rh{soundcheck} = _parse_iTunNORM($ret->{iTunNORM});
- $rh{mediatype}  = int($ret->{mediatype} || MEDIATYPE_AUDIO);
- return  ({codec=>$ret->{_CODEC}, ref=>\%rh});
+    my $cf = ( ( split( /\//, $file ) )[-1] );
+    $rh{songs}    = int( $ret->{tracks} );
+    $rh{songnum}  = int( $ret->{tracknum} );
+    $rh{cds}      = int( $ret->{cds} );
+    $rh{cdnum}    = int( $ret->{cdnum} );
+    $rh{srate}    = int( $ret->{srate} );
+    $rh{time}     = int( $ret->{time} );
+    $rh{bitrate}  = int( $ret->{bitrate} );
+    $rh{filesize} = int( $ret->{filesize} );
+    $rh{fdesc}    = getutf8( $ret->{fdesc} );
+    $rh{artist}   = getutf8( $ret->{artist} || "Unknown Artist" );
+    $rh{album}    = getutf8( $ret->{album}  || "Unknown Album" );
+    $rh{title}    = getutf8( $ret->{title}  || $cf || "Unknown Title" );
+    $rh{genre} = _get_genre( getutf8( $ret->{genre} || $ret->{gnre} || "" ) );
+    $rh{composer}   = getutf8( $ret->{composer} || "" );
+    $rh{soundcheck} = _parse_iTunNORM( $ret->{iTunNORM} );
+    $rh{mediatype}  = int( $ret->{mediatype} || MEDIATYPE_AUDIO );
+    return ( { codec => $ret->{_CODEC}, ref => \%rh } );
 }
 
 ######################################################################
@@ -263,54 +274,57 @@ Returns a hash with:
 =cut
 
 sub __is_pcm {
- my($file) = @_;
+    my ($file) = @_;
 
-	my $size = (-s $file);
-	return undef if $size < 32;
-	open(PCM, "$file") or return undef;
-	binmode(PCM);
-	#Get the group id and riff type
-	my ($gid, $rty, $buff,$srate,$bps) = undef;
-	
-	seek(PCM, 0, 0);
-	read(PCM, $gid, 4);
-	seek(PCM, 8, 0);
-	read(PCM, $rty, 4);
-	
-	seek(PCM, 24,0);
-	read(PCM,$buff,4);
-	$srate = GNUpod::FooBar::shx2int($buff);
-	
-	seek(PCM, 28, 0);
-	read(PCM,$buff,4);
-	$bps = GNUpod::FooBar::shx2int($buff);
-	close(PCM);
-	
-	return undef if $gid ne "RIFF";
-	return undef if $rty ne "WAVE";
+    my $size = ( -s $file );
+    return undef if $size < 32;
+    open( PCM, "$file" ) or return undef;
+    binmode(PCM);
 
-	#Check if something went wrong..
-	if($bps < 1 || $srate < 1) {
-		warn "FileMagic.pm: Looks like '$file' is a crazy pcm-file: bps: *$bps* // srate: *$srate* -> skipping!!\n";
-		return undef;
-	}
-	
-	my %rh = ();
-	$rh{bitrate}  = $bps;
-	$rh{filesize} = $size;
-	$rh{srate}    = $srate;
-	$rh{time}     = int(1000*$size/$bps);
-	$rh{fdesc}    = "RIFF Audio File";
-	#No id3 tags for us.. but mmmmaybe...
-	#We use getuft8 because you could use umlauts and such things :)
-	#Fixme: absolute versus relative paths :
-	$rh{title}    = getutf8(((split(/\//, $file))[-1]) || "Unknown Title");
-	$rh{album} =    getutf8(((split(/\//, $file))[-2]) || "Unknown Album");
-	$rh{artist} =   getutf8(((split(/\//, $file))[-3]) || "Unknown Artist");
-	$rh{mediatype}  = MEDIATYPE_AUDIO;
-return \%rh;
+    #Get the group id and riff type
+    my ( $gid, $rty, $buff, $srate, $bps ) = undef;
+
+    seek( PCM, 0, 0 );
+    read( PCM, $gid, 4 );
+    seek( PCM, 8, 0 );
+    read( PCM, $rty, 4 );
+
+    seek( PCM, 24, 0 );
+    read( PCM, $buff, 4 );
+    $srate = GNUpod::FooBar::shx2int($buff);
+
+    seek( PCM, 28, 0 );
+    read( PCM, $buff, 4 );
+    $bps = GNUpod::FooBar::shx2int($buff);
+    close(PCM);
+
+    return undef if $gid ne "RIFF";
+    return undef if $rty ne "WAVE";
+
+    #Check if something went wrong..
+    if ( $bps < 1 || $srate < 1 ) {
+        warn
+"FileMagic.pm: Looks like '$file' is a crazy pcm-file: bps: *$bps* // srate: *$srate* -> skipping!!\n";
+        return undef;
+    }
+
+    my %rh = ();
+    $rh{bitrate}  = $bps;
+    $rh{filesize} = $size;
+    $rh{srate}    = $srate;
+    $rh{time}     = int( 1000 * $size / $bps );
+    $rh{fdesc}    = "RIFF Audio File";
+
+    #No id3 tags for us.. but mmmmaybe...
+    #We use getuft8 because you could use umlauts and such things :)
+    #Fixme: absolute versus relative paths :
+    $rh{title} = getutf8( ( ( split( /\//, $file ) )[-1] ) || "Unknown Title" );
+    $rh{album} = getutf8( ( ( split( /\//, $file ) )[-2] ) || "Unknown Album" );
+    $rh{artist} =
+      getutf8( ( ( split( /\//, $file ) )[-3] ) || "Unknown Artist" );
+    $rh{mediatype} = MEDIATYPE_AUDIO;
+    return \%rh;
 }
-
 
 ######################################################################
 # Flatten deep data structures
@@ -336,42 +350,44 @@ Example:
 =cut
 
 sub __flatten {
-	my ($in,$exclude) = @_;
-	if (!defined($in)) { return undef; }
-	if ( (ref($in) eq "") && (ref(\$in) eq "SCALAR") ) {
-		my $out = $in;
-		$out =~ s/\x0//g;
-		if (defined($exclude) && ($out =~ /$exclude/)) { return undef; }
-		return $out;
-	}
-	if ( ref($in) eq "ARRAY" ) {
-		my @out=();
-		foreach (@{$in}) {
-			my $flat = __flatten($_, $exclude);
-			if (!defined($flat)) { next; }
-			push  @out, $flat;
-		}
-		if (@out) {
-			return join(" / ", @out);
-		} else {
-			return undef;
-		}
-	}
-	if ( ref($in) eq "HASH" ) {
-		my @out = ();
-		foreach (keys(%{$in})) {
-			my $kvp = __flatten($_, $exclude); # key
-			next if !defined($kvp);
-			my $v = __flatten($in->{$_}, $exclude); # value
-			$kvp .= " : ".$v     if (defined($v) && ("$v" ne ""));
-			push @out, $kvp;
-		}
-		if (@out) {
-			return __flatten(\@out,$exclude);
-		} else {
-			return undef;
-		}
-	}
+    my ( $in, $exclude ) = @_;
+    if ( !defined($in) ) { return undef; }
+    if ( ( ref($in) eq "" ) && ( ref( \$in ) eq "SCALAR" ) ) {
+        my $out = $in;
+        $out =~ s/\x0//g;
+        if ( defined($exclude) && ( $out =~ /$exclude/ ) ) { return undef; }
+        return $out;
+    }
+    if ( ref($in) eq "ARRAY" ) {
+        my @out = ();
+        foreach ( @{$in} ) {
+            my $flat = __flatten( $_, $exclude );
+            if ( !defined($flat) ) { next; }
+            push @out, $flat;
+        }
+        if (@out) {
+            return join( " / ", @out );
+        }
+        else {
+            return undef;
+        }
+    }
+    if ( ref($in) eq "HASH" ) {
+        my @out = ();
+        foreach ( keys( %{$in} ) ) {
+            my $kvp = __flatten( $_, $exclude );         # key
+            next if !defined($kvp);
+            my $v = __flatten( $in->{$_}, $exclude );    # value
+            $kvp .= " : " . $v if ( defined($v) && ( "$v" ne "" ) );
+            push @out, $kvp;
+        }
+        if (@out) {
+            return __flatten( \@out, $exclude );
+        }
+        else {
+            return undef;
+        }
+    }
 }
 
 ######################################################################
@@ -412,42 +428,47 @@ Usage example:
 =cut
 
 sub __merge_strings {
-	my $options = shift(@_);
-	my $joinby = " ";
-	my $wspace = "asis";
-	my $case = "check";
+    my $options = shift(@_);
+    my $joinby  = " ";
+    my $wspace  = "asis";
+    my $case    = "check";
 
-	if (ref($options) eq "HASH") {
-		$joinby = $options->{joinby}        if defined($options->{joinby});
-		$wspace = lc($options->{wspace})    if defined($options->{wspace});
-		$case   = lc($options->{case})      if defined($options->{case});
-	}
-	my $merged = "";
+    if ( ref($options) eq "HASH" ) {
+        $joinby = $options->{joinby}       if defined( $options->{joinby} );
+        $wspace = lc( $options->{wspace} ) if defined( $options->{wspace} );
+        $case   = lc( $options->{case} )   if defined( $options->{case} );
+    }
+    my $merged = "";
 
-	foreach (@_) {
-		# only merge non-empty strings
-		next if (!defined($_) || ("$_" eq ""));
+    foreach (@_) {
 
-		my $left = $merged;
-		my $right = $_;
+        # only merge non-empty strings
+        next if ( !defined($_) || ( "$_" eq "" ) );
 
-		if ($wspace eq "norm") {
-			$left  =~ s/\s+/ /g;
-			$right =~ s/\s+/ /g;
-		} elsif ($wspace eq "kill") {
-			$left  =~ s/\s+//g;
-			$right =~ s/\s+//g;
-		}
-		if ($case eq "ignore") {
-			$left  = lc($left);
-			$right = lc($right);
-		}
-		
-		if (index($left,$right) >= 0) {next;} # $_ already contained
-		if (index($right,$left) >= 0) {$merged = $_; next;} # $_ is a superset
-		$merged = join ( $joinby, $merged, $_);
-	}
-	return $merged;
+        my $left  = $merged;
+        my $right = $_;
+
+        if ( $wspace eq "norm" ) {
+            $left  =~ s/\s+/ /g;
+            $right =~ s/\s+/ /g;
+        }
+        elsif ( $wspace eq "kill" ) {
+            $left  =~ s/\s+//g;
+            $right =~ s/\s+//g;
+        }
+        if ( $case eq "ignore" ) {
+            $left  = lc($left);
+            $right = lc($right);
+        }
+
+        if ( index( $left,  $right ) >= 0 ) { next; }    # $_ already contained
+        if ( index( $right, $left ) >= 0 ) {
+            $merged = $_;
+            next;
+        }                                                # $_ is a superset
+        $merged = join( $joinby, $merged, $_ );
+    }
+    return $merged;
 }
 
 ######################################################################
@@ -468,101 +489,130 @@ Otherwise returns a HASHREF containing the meta information.
 =cut
 
 sub __is_mp3 {
-	my($file,$flags) = @_;
-	
-	my $h  = MP3::Info::get_mp3info($file);
-	my $hs = undef;
-	my $hs_raw = undef;
-	if(ref($h) ne 'HASH') {
-		return undef; # Not an mp3 file
-	}
-	elsif($h->{FRAMES} == 0) {
-		return undef; # Smells fishy..
-	}
-	
-	
-	#This is our default fallback:
-	#If we didn't find a title, we'll use the
-	#Filename.. why? because you are not able
-	#to play the file without an filename ;)
-	my $cf = ((split(/\//,$file))[-1]);
-	
-	my %rh = ();
-	$rh{bitrate}  = $h->{BITRATE};
-	$rh{filesize} = $h->{SIZE};
-	$rh{srate}    = int($h->{FREQUENCY}*1000);
-	$rh{time}     = int($h->{SECS}*1000);
-	$rh{fdesc}    = "MPEG ${$h}{VERSION} layer ${$h}{LAYER} file";
-	
-	$h  = MP3::Info::get_mp3tag($file,1,0,$flags->{'noAPE'}?0:1) unless $flags->{'noIDv1'};  #Get the IDv1 tag
-	$hs = MP3::Info::get_mp3tag($file,2,2,$flags->{'noAPE'}?0:1) unless $flags->{'noIDv2'};  #Get the IDv2 tag
-	$hs_raw = MP3::Info::get_mp3tag($file,2,1) unless $flags->{'noIDv2'};  #Get the raw IDv2 tag without APE
-	
-	my $nonitunescomment = undef;
-	#The IDv2 Hashref may return arrays.. kill them :)
-	foreach my $xkey (keys(%$hs)) {
-		if ($xkey =~ /^COM[ M]?$/) {
-			my $comref = $hs->{$xkey};
-			#use Data::Dumper;
-			#print Dumper($comref);
-			$nonitunescomment = __flatten($comref,"^iTun");
-			#print Dumper($nonitunescomment);
-		}
-		if (($xkey ne "APIC") && ($xkey ne "PIC")) {
-			$hs->{$xkey} = __flatten($hs->{$xkey});
-		}
-	}
+    my ( $file, $flags ) = @_;
 
+    my $h      = MP3::Info::get_mp3info($file);
+    my $hs     = undef;
+    my $hs_raw = undef;
+    if ( ref($h) ne 'HASH' ) {
+        return undef;    # Not an mp3 file
+    }
+    elsif ( $h->{FRAMES} == 0 ) {
+        return undef;    # Smells fishy..
+    }
 
-	#IDv2 is stronger than IDv1..
-	#Try to parse things like 01/01
-	my @songa = pss($hs->{TRCK} || $hs->{TRK} || $h->{TRACKNUM});
-	my @cda   = pss($hs->{TPOS});
+    #This is our default fallback:
+    #If we didn't find a title, we'll use the
+    #Filename.. why? because you are not able
+    #to play the file without an filename ;)
+    my $cf = ( ( split( /\//, $file ) )[-1] );
 
-	# Use track ReplayGain by default, use album ReplayGain if requested
-	my $rgtag = "REPLAYGAIN_TRACK_GAIN";
-	$rgtag = "REPLAYGAIN_ALBUM_GAIN" if($flags->{'rgalbum'});
-	
-	$rh{songs}      = int($songa[1]);
-	$rh{songnum}    = int($songa[0]);
-	$rh{cdnum}      = int($cda[0]);
-	$rh{cds}        = int($cda[1]);
-	$rh{year}       = ($hs->{TYER} || $hs->{TYE} || $h->{YEAR}    || 0);
-	$rh{title}      = ($hs->{TIT2} || $hs->{TT2} || $h->{TITLE}   || $cf || "Untitled");
-	$rh{album}      = ($hs->{TALB} || $hs->{TAL} || $h->{ALBUM}   || "Unknown Album");
-	$rh{artist}     = ($hs->{TPE1} || $hs->{TP1} || $hs->{TPE2}   || $hs->{TP2} || $h->{ARTIST}  || "Unknown Artist");
-	$rh{genre}      = _get_genre($hs->{TCON} || $hs->{TCO} || $h->{GENRE}   || "");
-	$rh{comment}    = ($hs->{COMM} || $hs->{COM} || $h->{COMMENT} || "");
-	$rh{desc}       = __merge_strings({joinby => " ", wspace => "norm", case => "ignore"},($hs->{USLT} || $hs->{ULT}),($nonitunescomment || $h->{COMMENT}));
-	delete $rh{desc} if (!defined($rh{desc}) || $rh{desc} eq "");
-	$rh{composer}   = ($hs->{TCOM} || $hs->{TCM} || "");
-	$rh{playcount}  = int($hs->{PCNT} || $hs->{CNT}) || 0;
-	$rh{mediatype}  = MEDIATYPE_AUDIO;
-	$rh{lyrics_flag}= 1 if($hs->{USLT} || $hs->{ULT});
+    my %rh = ();
+    $rh{bitrate}  = $h->{BITRATE};
+    $rh{filesize} = $h->{SIZE};
+    $rh{srate}    = int( $h->{FREQUENCY} * 1000 );
+    $rh{time}     = int( $h->{SECS} * 1000 );
+    $rh{fdesc}    = "MPEG ${$h}{VERSION} layer ${$h}{LAYER} file";
 
-	# RVA2/XRVA trumps all.
-	if (defined($hs_raw->{RVA2}) or defined($hs_raw->{XRVA})) {
-		my $rva2tag = ($hs_raw->{RVA2} || $hs_raw->{XRVA});
-		if (ref(\$rva2tag) eq "SCALAR") {
-			$rh{soundcheck} = _parse_db_to_soundcheck( _parse_RVA2_to_db(($hs_raw->{RVA2} || $hs_raw->{XRVA}), $flags->{'rgalbum'}) );
-		} else {
-			use Data::Dumper;
-			$Data::Dumper::Useqq = 1;
-			warn "[RVA2] Currently gnupod does not support more than one RVA2 tag! Your file \"$cf\" seems to have more.\n[RVA2] Please report this as a bug along with the following information:\n====\n".Dumper($rva2tag)."====\n";
-		}
-	}
-	# REPLAY_x_GAIN from APE tag or TXXX is second in line
-	elsif (defined($hs->{$rgtag}) or defined($h->{$rgtag})) {
-		$rh{soundcheck} = _parse_db_to_soundcheck($hs->{$rgtag} || $h->{$rgtag});
-	}
-	# the itunes way only if nothing else works.
-	if (!defined($rh{soundcheck})) {
-		$rh{soundcheck} = _parse_iTunNORM($hs->{COMM} || $hs->{COM} || $h->{COMMENT});
-		$rh{volume}     = _parse_RVAD_to_iTunesVolume( $hs_raw->{RVAD} || $hs_raw->{RVA} );
-	}
+    $h = MP3::Info::get_mp3tag( $file, 1, 0, $flags->{'noAPE'} ? 0 : 1 )
+      unless $flags->{'noIDv1'};    #Get the IDv1 tag
+    $hs = MP3::Info::get_mp3tag( $file, 2, 2, $flags->{'noAPE'} ? 0 : 1 )
+      unless $flags->{'noIDv2'};    #Get the IDv2 tag
+    $hs_raw = MP3::Info::get_mp3tag( $file, 2, 1 )
+      unless $flags->{'noIDv2'};    #Get the raw IDv2 tag without APE
 
+    my $nonitunescomment = undef;
 
-	# Handle volume adjustment information
+    #The IDv2 Hashref may return arrays.. kill them :)
+    foreach my $xkey ( keys(%$hs) ) {
+        if ( $xkey =~ /^COM[ M]?$/ ) {
+            my $comref = $hs->{$xkey};
+
+            #use Data::Dumper;
+            #print Dumper($comref);
+            $nonitunescomment = __flatten( $comref, "^iTun" );
+
+            #print Dumper($nonitunescomment);
+        }
+        if ( ( $xkey ne "APIC" ) && ( $xkey ne "PIC" ) ) {
+            $hs->{$xkey} = __flatten( $hs->{$xkey} );
+        }
+    }
+
+    #IDv2 is stronger than IDv1..
+    #Try to parse things like 01/01
+    my @songa = pss( $hs->{TRCK} || $hs->{TRK} || $h->{TRACKNUM} );
+    my @cda   = pss( $hs->{TPOS} );
+
+    # Use track ReplayGain by default, use album ReplayGain if requested
+    my $rgtag = "REPLAYGAIN_TRACK_GAIN";
+    $rgtag = "REPLAYGAIN_ALBUM_GAIN" if ( $flags->{'rgalbum'} );
+
+    $rh{songs}   = int( $songa[1] );
+    $rh{songnum} = int( $songa[0] );
+    $rh{cdnum}   = int( $cda[0] );
+    $rh{cds}     = int( $cda[1] );
+    $rh{year}    = ( $hs->{TYER} || $hs->{TYE} || $h->{YEAR} || 0 );
+    $rh{title} =
+      ( $hs->{TIT2} || $hs->{TT2} || $h->{TITLE} || $cf || "Untitled" );
+    $rh{album} =
+      ( $hs->{TALB} || $hs->{TAL} || $h->{ALBUM} || "Unknown Album" );
+    $rh{artist} =
+      (      $hs->{TPE1}
+          || $hs->{TP1}
+          || $hs->{TPE2}
+          || $hs->{TP2}
+          || $h->{ARTIST}
+          || "Unknown Artist" );
+    $rh{genre}   = _get_genre( $hs->{TCON} || $hs->{TCO} || $h->{GENRE} || "" );
+    $rh{comment} = ( $hs->{COMM} || $hs->{COM} || $h->{COMMENT}         || "" );
+    $rh{desc}    = __merge_strings(
+        { joinby => " ", wspace => "norm", case => "ignore" },
+        ( $hs->{USLT} || $hs->{ULT} ),
+        ( $nonitunescomment || $h->{COMMENT} )
+    );
+    delete $rh{desc} if ( !defined( $rh{desc} ) || $rh{desc} eq "" );
+    $rh{composer}    = ( $hs->{TCOM}    || $hs->{TCM} || "" );
+    $rh{playcount}   = int( $hs->{PCNT} || $hs->{CNT} ) || 0;
+    $rh{mediatype}   = MEDIATYPE_AUDIO;
+    $rh{lyrics_flag} = 1 if ( $hs->{USLT} || $hs->{ULT} );
+
+    # RVA2/XRVA trumps all.
+    if ( defined( $hs_raw->{RVA2} ) or defined( $hs_raw->{XRVA} ) ) {
+        my $rva2tag = ( $hs_raw->{RVA2} || $hs_raw->{XRVA} );
+        if ( ref( \$rva2tag ) eq "SCALAR" ) {
+            $rh{soundcheck} = _parse_db_to_soundcheck(
+                _parse_RVA2_to_db(
+                    ( $hs_raw->{RVA2} || $hs_raw->{XRVA} ),
+                    $flags->{'rgalbum'}
+                )
+            );
+        }
+        else {
+            use Data::Dumper;
+            $Data::Dumper::Useqq = 1;
+            warn
+"[RVA2] Currently gnupod does not support more than one RVA2 tag! Your file \"$cf\" seems to have more.\n[RVA2] Please report this as a bug along with the following information:\n====\n"
+              . Dumper($rva2tag)
+              . "====\n";
+        }
+    }
+
+    # REPLAY_x_GAIN from APE tag or TXXX is second in line
+    elsif ( defined( $hs->{$rgtag} ) or defined( $h->{$rgtag} ) ) {
+        $rh{soundcheck} =
+          _parse_db_to_soundcheck( $hs->{$rgtag} || $h->{$rgtag} );
+    }
+
+    # the itunes way only if nothing else works.
+    if ( !defined( $rh{soundcheck} ) ) {
+        $rh{soundcheck} =
+          _parse_iTunNORM( $hs->{COMM} || $hs->{COM} || $h->{COMMENT} );
+        $rh{volume} =
+          _parse_RVAD_to_iTunesVolume( $hs_raw->{RVAD} || $hs_raw->{RVA} );
+    }
+
+# Handle volume adjustment information
 #	if ($hs->{RVA2} or $hs->{XRVA}) {
 #		# if XRVA is present, handle it like RVA2 (http://www.id3.org/Experimental_RVA2)
 #		$hs->{RVA2} = $hs->{XRVA} if (!defined($hs->{RVA2}) && defined($hs->{XRVA}));
@@ -570,7 +620,7 @@ sub __is_mp3 {
 #		# See http://www.id3.org/id3v2.4.0-frames for format spec
 #		my ($app, $channel, $adj) = unpack("Z* C n", $hs->{RVA2});
 #		if ($channel == 1) {
-#			
+#
 #			$adj -= 0x10000 if ($adj > 0x8000);
 #			my $adjdb = $adj / 512.0;
 #			# Translate decibel volume adjustment into relative percentage
@@ -581,17 +631,17 @@ sub __is_mp3 {
 #			# adjustment adjabs like this:
 #			#     adjdb = 20 * log10(1 + adjabs)
 #			# =>  adjabs = 10 ** (adjdb / 20) - 1
-#			
+#
 #			my $vol = int(100 * (10 ** ($adjdb / 20) - 1));
 #			$vol = 100 if ($vol > 100);
 #			$vol = -100 if ($vol < -100);
-#			
+#
 #			# print "$file: adjusting volume by $vol% ($adjdb dB)\n";
 #			$rh{volume} = $vol;
 #		}
 #	}
 
-	return \%rh;
+    return \%rh;
 }
 
 ########
@@ -607,12 +657,12 @@ GENRE is returned.
 =cut
 
 sub _get_genre {
-	my ($string) = @_;
-	my $num_to_txt = undef;
-	if($string =~ /^\((\d+)\)$/) {
-		$num_to_txt = $mp3_genres[$1];
-	}
-	return ($num_to_txt || $string);
+    my ($string) = @_;
+    my $num_to_txt = undef;
+    if ( $string =~ /^\((\d+)\)$/ ) {
+        $num_to_txt = $mp3_genres[$1];
+    }
+    return ( $num_to_txt || $string );
 }
 
 ########
@@ -629,13 +679,13 @@ Example:
 =cut
 
 sub pss {
-	my($string) = @_;
-	if(my($s,$n) = $string =~ /(\d+)\/(\d+)/) {
-		return(int($s),int($n));
-	}
-	else {
-		return int($string);
-	}
+    my ($string) = @_;
+    if ( my ( $s, $n ) = $string =~ /(\d+)\/(\d+)/ ) {
+        return ( int($s), int($n) );
+    }
+    else {
+        return int($string);
+    }
 }
 
 #########
@@ -649,53 +699,59 @@ Tries to convert whatever you thow at it into a UTF8 string.
 =cut
 
 sub getutf8 {
-	my($in) = @_;
-	return undef unless $in; #Do not fsckup empty input
-	
-	#Get the ENCODING
-	$in =~ s/^(.)//;
-	my $encoding = $1;
-	
-	# -> UTF16 with or without BOM
-	if(ord($encoding) == 1 || ord($encoding) == 2) {
-		# -> UTF16 with or without BOM
-		my $bfx = Unicode::String::utf16($in); #Object is utf16
-		$bfx->byteswap if $bfx->ord == 0xFFFE;
-		$in = $bfx->utf8; #Return utf8 version
-		$in =~ s/\x00+$//;         # Removes trailing 0's
-		if(unpack("H*",substr($in,0,3)) eq 'efbbbf') {
-			# -> Remove faulty utf16-to-utf8 BOM
-			$in = substr($in,3);
-		}
-	}
-	elsif(ord($encoding) == 3) {
-		# -> UTF8
-		$in =~ s/\x00+$//;         # Removes trailing 0's
-		$in = Unicode::String::utf8($in)->utf8; #Paranoia
-	}
-	elsif(ord($encoding) > 0 && ord($encoding) < 32) {
-		warn "FileMagic.pm: warning: unsupportet ID3 Encoding found: ".ord($encoding)."\n";
-		warn "                       send a bugreport to adrian\@blinkenlights.ch\n";
-		return undef;
-	}
-	else {
-		$in = $encoding.$in;     # Restores input
-		$in =~ tr/\0//d;         # Removes evil 0's
-		my $oldstderr = *STDERR; #Kill all utf8 warnings.. this is uuugly
-		*STDERR = "NULLFH";
-		my $bfx = Unicode::String::utf8($in)->utf8;
-		*STDERR = $oldstderr;    #Restore old filehandle
-		if($bfx ne $in) {
-			#Input was no valid utf8, assume latin1 input
-			$in =~  s/[\000-\037]//gm; #Kill stupid chars..
-			$in = Unicode::String::latin1($in)->utf8
-		}
-		else { #Return the unicoded input
-			$in = $bfx;
-		}
-	}
-	
-	return $in;
+    my ($in) = @_;
+    return undef unless $in;    #Do not fsckup empty input
+
+    #Get the ENCODING
+    $in =~ s/^(.)//;
+    my $encoding = $1;
+
+    # -> UTF16 with or without BOM
+    if ( ord($encoding) == 1 || ord($encoding) == 2 ) {
+
+        # -> UTF16 with or without BOM
+        my $bfx = Unicode::String::utf16($in);    #Object is utf16
+        $bfx->byteswap if $bfx->ord == 0xFFFE;
+        $in = $bfx->utf8;                         #Return utf8 version
+        $in =~ s/\x00+$//;                        # Removes trailing 0's
+        if ( unpack( "H*", substr( $in, 0, 3 ) ) eq 'efbbbf' ) {
+
+            # -> Remove faulty utf16-to-utf8 BOM
+            $in = substr( $in, 3 );
+        }
+    }
+    elsif ( ord($encoding) == 3 ) {
+
+        # -> UTF8
+        $in =~ s/\x00+$//;                         # Removes trailing 0's
+        $in = Unicode::String::utf8($in)->utf8;    #Paranoia
+    }
+    elsif ( ord($encoding) > 0 && ord($encoding) < 32 ) {
+        warn "FileMagic.pm: warning: unsupportet ID3 Encoding found: "
+          . ord($encoding) . "\n";
+        warn
+"                       send a bugreport to adrian\@blinkenlights.ch\n";
+        return undef;
+    }
+    else {
+        $in = $encoding . $in;                     # Restores input
+        $in =~ tr/\0//d;                           # Removes evil 0's
+        my $oldstderr = *STDERR;    #Kill all utf8 warnings.. this is uuugly
+        *STDERR = "NULLFH";
+        my $bfx = Unicode::String::utf8($in)->utf8;
+        *STDERR = $oldstderr;       #Restore old filehandle
+        if ( $bfx ne $in ) {
+
+            #Input was no valid utf8, assume latin1 input
+            $in =~ s/[\000-\037]//gm;    #Kill stupid chars..
+            $in = Unicode::String::latin1($in)->utf8;
+        }
+        else {                           #Return the unicoded input
+            $in = $bfx;
+        }
+    }
+
+    return $in;
 }
 
 ##############################
@@ -721,17 +777,21 @@ see http://www.id3.org/iTunes_Normalization_settings
 =cut
 
 sub _parse_iTunNORM {
-	my($string) = @_;
-	if($string =~ /\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})/) {
-		#NOTE to myself: oct() does not produce an octal value.
-		#It parses octal, hex and binary and returns decimal.
-		my $left = oct("0x".$1);
-		my $right = oct("0x".$2);
-		#NOTE to myself: Choosing the bigger value chooses the smaller gain!
-		#Maybe choosing the one closer to 1000 (+0dB) would be better?
-		return ($left>$right ? $left:$right);
-	}
-	return undef;
+    my ($string) = @_;
+    if ( $string =~
+/\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})\s([0-9A-Fa-f]{8})/
+      )
+    {
+        #NOTE to myself: oct() does not produce an octal value.
+        #It parses octal, hex and binary and returns decimal.
+        my $left  = oct( "0x" . $1 );
+        my $right = oct( "0x" . $2 );
+
+        #NOTE to myself: Choosing the bigger value chooses the smaller gain!
+        #Maybe choosing the one closer to 1000 (+0dB) would be better?
+        return ( $left > $right ? $left : $right );
+    }
+    return undef;
 }
 
 #########################################################
@@ -744,22 +804,25 @@ Document me!
 =cut
 
 sub kick_convert {
-	my($prog, $quality, $file, $format, $con) = @_;
+    my ( $prog, $quality, $file, $format, $con ) = @_;
 
-	$prog = "$con->{bindir}/$prog";
-	#Set Quality to a normal level
-	$quality = 0 if $quality < 0;
-	$quality = 9 if $quality > 9;
-	open(KICKOMATIC, "-|") or exec($prog, $file, "GET_$format", int($quality)) or die "FileMagic::kick_convert: Could not exec $prog\n";
-	binmode(KICKOMATIC);
-	my $newP = <KICKOMATIC>;
-	chomp($newP);
-	close(KICKOMATIC);
-	
-	if($newP =~ /^PATH:(.+)$/) {
-		return $1;
-	}
-	return undef;
+    $prog = "$con->{bindir}/$prog";
+
+    #Set Quality to a normal level
+    $quality = 0 if $quality < 0;
+    $quality = 9 if $quality > 9;
+    open( KICKOMATIC, "-|" )
+      or exec( $prog, $file, "GET_$format", int($quality) )
+      or die "FileMagic::kick_convert: Could not exec $prog\n";
+    binmode(KICKOMATIC);
+    my $newP = <KICKOMATIC>;
+    chomp($newP);
+    close(KICKOMATIC);
+
+    if ( $newP =~ /^PATH:(.+)$/ ) {
+        return $1;
+    }
+    return undef;
 }
 
 #########################################################
@@ -772,49 +835,58 @@ Document me!
 =cut
 
 sub kick_reencode {
-	my($quality, $file, $format, $con) = @_;
-	
-	$quality = int($quality);
-	
-	#Lame's limits
-	return undef if $quality < 0; #=Excellent Quality
-	return undef if $quality > 9; #=Bad Quality
-	
-	#Try to get an unique name
-	my $tmpout = GNUpod::FooBar::get_u_path("/tmp/gnupod_reencode", "tmp") or return undef;
-	
-	if($format eq 'm4a') {
-		#Faac is not as nice as lame: We have to decode ourself.. and fixup the $quality value
-		$quality = 140 - ($quality*10);
-		my $pcmout = $tmpout.".wav";
-		system( ("faad", "-o", $pcmout, $file) );
-		#Ok, we've got a pcm version.. encode it!
-		
-		$tmpout .= ".m4a"; #Fixme: This breaks m4b.. well.. next time i'll fix it..
-		my $ret = system( ("faac", "-w", "-q", $quality, "-o", $tmpout, $pcmout) );
-		unlink($pcmout) or warn "FileMagic.pm: Could not unlink '$pcmout' , $!\n";
-		if($ret) {
-			unlink($tmpout) or warn "FileMagic.pm: Could not unlink '$tmpout', $!\n";
-			return undef;
-		}
-		else {
-			return $tmpout;
-		}
-	}
-	elsif($format eq 'mp3') {
-		$tmpout .= ".mp3";
-		my $ret = system( ("lame", "--silent", "-V", $quality, $file, $tmpout) );
-		if($ret) {
-			#We failed for some reason..
-			unlink($tmpout) or warn "FileMagic.pm: Could not unlink '$tmpout', $!\n";
-		}
-		else {
-			return $tmpout;
-		}
-	}
-	return undef;
-}
+    my ( $quality, $file, $format, $con ) = @_;
 
+    $quality = int($quality);
+
+    #Lame's limits
+    return undef if $quality < 0;    #=Excellent Quality
+    return undef if $quality > 9;    #=Bad Quality
+
+    #Try to get an unique name
+    my $tmpout = GNUpod::FooBar::get_u_path( "/tmp/gnupod_reencode", "tmp" )
+      or return undef;
+
+    if ( $format eq 'm4a' ) {
+
+#Faac is not as nice as lame: We have to decode ourself.. and fixup the $quality value
+        $quality = 140 - ( $quality * 10 );
+        my $pcmout = $tmpout . ".wav";
+        system( ( "faad", "-o", $pcmout, $file ) );
+
+        #Ok, we've got a pcm version.. encode it!
+
+        $tmpout .=
+          ".m4a";    #Fixme: This breaks m4b.. well.. next time i'll fix it..
+        my $ret =
+          system( ( "faac", "-w", "-q", $quality, "-o", $tmpout, $pcmout ) );
+        unlink($pcmout)
+          or warn "FileMagic.pm: Could not unlink '$pcmout' , $!\n";
+        if ($ret) {
+            unlink($tmpout)
+              or warn "FileMagic.pm: Could not unlink '$tmpout', $!\n";
+            return undef;
+        }
+        else {
+            return $tmpout;
+        }
+    }
+    elsif ( $format eq 'mp3' ) {
+        $tmpout .= ".mp3";
+        my $ret =
+          system( ( "lame", "--silent", "-V", $quality, $file, $tmpout ) );
+        if ($ret) {
+
+            #We failed for some reason..
+            unlink($tmpout)
+              or warn "FileMagic.pm: Could not unlink '$tmpout', $!\n";
+        }
+        else {
+            return $tmpout;
+        }
+    }
+    return undef;
+}
 
 #########################################################
 # Read metadata from converter
@@ -826,23 +898,24 @@ Document me!
 =cut
 
 sub converter_readmeta {
-	my($prog, $file, $con) = @_;
-	
-	$prog = "$con->{bindir}/$prog";
-	my %metastuff = ();
-	open(CFLAC, "-|") or exec($prog, $file, "GET_META") or die "converter_readmeta: Could not exec $prog\n";
-	binmode(CFLAC);
-	while(<CFLAC>) {
-		chomp($_);
-		if($_ =~ /^([^:]+):(.*)$/) {
-			$metastuff{$1} = $2;
-		}
-	}
-	close(CFLAC);
-	return undef unless $metastuff{FORMAT};
-	return \%metastuff;
-}
+    my ( $prog, $file, $con ) = @_;
 
+    $prog = "$con->{bindir}/$prog";
+    my %metastuff = ();
+    open( CFLAC, "-|" )
+      or exec( $prog, $file, "GET_META" )
+      or die "converter_readmeta: Could not exec $prog\n";
+    binmode(CFLAC);
+    while (<CFLAC>) {
+        chomp($_);
+        if ( $_ =~ /^([^:]+):(.*)$/ ) {
+            $metastuff{$1} = $2;
+        }
+    }
+    close(CFLAC);
+    return undef unless $metastuff{FORMAT};
+    return \%metastuff;
+}
 
 #########################################################
 # Convert ReplayGain(dB) to SoundCheck
@@ -857,22 +930,21 @@ For more information on ReplayGain see http://replaygain.hydrogenaudio.org/
 =cut
 
 sub _parse_db_to_soundcheck {
-	my ($gain) = @_;
-	return undef unless defined($gain);
-	if($gain =~ /(.*?)\s*dB$/) {
-		$gain = $1
-	}
-	if (!defined($gain =~ /^\s*[+-]?\d+(\.\d+)?\s*$/)) {
-		warn "Unknown replay gain value \"$gain\". Please report this error and help us to improve gnupod!\n";
-	}
-	my $result = int((10 ** (-$gain / 10)) * 1000 + .5);
-	if ($result > 65534) {
-		$result = 65534;
-	}
-	return $result;
+    my ($gain) = @_;
+    return undef unless defined($gain);
+    if ( $gain =~ /(.*?)\s*dB$/ ) {
+        $gain = $1;
+    }
+    if ( !defined( $gain =~ /^\s*[+-]?\d+(\.\d+)?\s*$/ ) ) {
+        warn
+"Unknown replay gain value \"$gain\". Please report this error and help us to improve gnupod!\n";
+    }
+    my $result = int( ( 10**( -$gain / 10 ) ) * 1000 + .5 );
+    if ( $result > 65534 ) {
+        $result = 65534;
+    }
+    return $result;
 }
-
-
 
 #########################################################
 # Convert RVA2/XRVA to ReplayGain(dB)
@@ -891,22 +963,24 @@ and http://www.id3.org/Experimental_RVA2
 =cut
 
 sub _parse_RVA2_to_db {
-	my ($rawdata, $album) = @_;
-	my ($app, $channel, $adj) = unpack("Z* C n", $rawdata);
-	if ($album && ($app ne "album")) { return undef; }
+    my ( $rawdata, $album ) = @_;
+    my ( $app, $channel, $adj ) = unpack( "Z* C n", $rawdata );
+    if ( $album && ( $app ne "album" ) ) { return undef; }
 
-	if ($channel == 1) { # we only look for the Master
-		$adj -= 0x10000 if ($adj > 0x8000);
-		my $adjdb = $adj / 512.0;
-		return "$adjdb dB";
-	}
-	warn "Unknown RVA2/XRVA tag found: Identification: $app, Channel: $channel, adj: $adj\n";
-	warn "Please send us the raw tag value to help us improve gnupod.\n";
-	warn "raw value: \"".unpack("H*", $rawdata)."\"\n";
-	return undef;
+    if ( $channel == 1 ) {    # we only look for the Master
+        $adj -= 0x10000 if ( $adj > 0x8000 );
+        my $adjdb = $adj / 512.0;
+        return "$adjdb dB";
+    }
+    warn
+"Unknown RVA2/XRVA tag found: Identification: $app, Channel: $channel, adj: $adj\n";
+    warn "Please send us the raw tag value to help us improve gnupod.\n";
+    warn "raw value: \"" . unpack( "H*", $rawdata ) . "\"\n";
+    return undef;
 }
 
 #########################################################
+
 =item _parse_RVAD_to_iTunesVolume ($rawdata) {
 
 Converts RVA/RVAD tag as written by iTunes to an integer
@@ -925,55 +999,62 @@ Returns an integer from -100 to 100 or undef;
 =cut
 
 sub _parse_RVAD_to_iTunesVolume {
-	my ($rawdata) = @_;
-	return undef if (!defined($rawdata));
-	my ($incdec, $bitperchannel, $rightadj, $leftadj); # reading
-	my $volpercent; # writing
-	my ($rightsign, $leftsign);
+    my ($rawdata) = @_;
+    return undef if ( !defined($rawdata) );
+    my ( $incdec, $bitperchannel, $rightadj, $leftadj );    # reading
+    my $volpercent;                                         # writing
+    my ( $rightsign, $leftsign );
 
-	# i know there is a smarter way to unpack this, but I don't trust my unpack-foo just yet.
-	my @rawbytes = unpack ("C*", $rawdata);
-#	print Dumper(\@rawbytes);
+# i know there is a smarter way to unpack this, but I don't trust my unpack-foo just yet.
+    my @rawbytes = unpack( "C*", $rawdata );
 
-	$incdec = shift @rawbytes;
-	$rightsign = ($incdec & 1)?1:-1;
-	$leftsign  = ($incdec & 2)?1:-1;
-	warn "RVA/RVAD tag has one channel increment and one decrement. Not an iTunes tag?\n" if (($rightsign * $leftsign) == -1);
+    #	print Dumper(\@rawbytes);
 
-	$bitperchannel = shift @rawbytes;
-	warn "RVA/RVAD tag is not 16 bit. Not an iTunes tag?\n" if ($bitperchannel != 16);
-	my $bytesperchannel = int(($bitperchannel+7)/8);
+    $incdec    = shift @rawbytes;
+    $rightsign = ( $incdec & 1 ) ? 1 : -1;
+    $leftsign  = ( $incdec & 2 ) ? 1 : -1;
+    warn
+"RVA/RVAD tag has one channel increment and one decrement. Not an iTunes tag?\n"
+      if ( ( $rightsign * $leftsign ) == -1 );
 
-	$rightadj=0;
-	for ( my $i = 0 ; $i < $bytesperchannel ; $i++) {
-		$rightadj = $rightadj << 8;
-		$rightadj += shift @rawbytes;
-	}
-	$leftadj=0;
-	for ( my $i = 0 ; $i < $bytesperchannel ; $i++) {
-		$leftadj = $leftadj << 8;
-		$leftadj += shift @rawbytes;
-	}
-	warn "RVA/RVAD tag left and right channel differ. Not an iTunes tag?\n" if ($leftadj != $rightadj);
+    $bitperchannel = shift @rawbytes;
+    warn "RVA/RVAD tag is not 16 bit. Not an iTunes tag?\n"
+      if ( $bitperchannel != 16 );
+    my $bytesperchannel = int( ( $bitperchannel + 7 ) / 8 );
 
-	# up until now the handling is somewhat generic but
-	# now we are entering iTunes land ... abandon all hope
+    $rightadj = 0;
+    for ( my $i = 0 ; $i < $bytesperchannel ; $i++ ) {
+        $rightadj = $rightadj << 8;
+        $rightadj += shift @rawbytes;
+    }
+    $leftadj = 0;
+    for ( my $i = 0 ; $i < $bytesperchannel ; $i++ ) {
+        $leftadj = $leftadj << 8;
+        $leftadj += shift @rawbytes;
+    }
+    warn "RVA/RVAD tag left and right channel differ. Not an iTunes tag?\n"
+      if ( $leftadj != $rightadj );
 
-	$volpercent = int( ($leftadj + $rightadj)/2 / ((1<<$bitperchannel) -1) * 100 ) * $rightsign;
+    # up until now the handling is somewhat generic but
+    # now we are entering iTunes land ... abandon all hope
 
-	if ($volpercent < -100 ) {
-		warn "RVA/RVAD tag adjustment: $volpercent < -100. Setting to -100\n" ;
-		$volpercent = -100;
-	}
+    $volpercent = int(
+        ( $leftadj + $rightadj ) / 2 / ( ( 1 << $bitperchannel ) - 1 ) * 100 )
+      * $rightsign;
 
-	if ($volpercent >  100 ) {
-		warn "RVA/RVAD tag adjustment: $volpercent >  100. Setting to  100\n" ;
-		$volpercent = 100;
-	} #fdfg dfg
+    if ( $volpercent < -100 ) {
+        warn "RVA/RVAD tag adjustment: $volpercent < -100. Setting to -100\n";
+        $volpercent = -100;
+    }
 
-#	print "foo: $volpercent \n";
+    if ( $volpercent > 100 ) {
+        warn "RVA/RVAD tag adjustment: $volpercent >  100. Setting to  100\n";
+        $volpercent = 100;
+    }    #fdfg dfg
 
-	return $volpercent;
+    #	print "foo: $volpercent \n";
+
+    return $volpercent;
 }
 
 =back
