@@ -31,20 +31,30 @@ use GNUpod::SysInfo;
 use GNUpod::ArtworkDB;
 use Getopt::Long;
 
-
 $| = 1;
 
 my $mktunes = undef;
 my %opts    = ();
 
-
 print "mktunes.pl ###__VERSION__### (C) Adrian Ulrich\n";
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
-GetOptions(\%opts, "version", "help|h", "ipod-name|n=s", "mount|m=s", "volume|v=i", "energy|e", "fwguid|g=s");
-GNUpod::FooBar::GetConfig(\%opts, {'ipod-name'=>'s', mount=>'s', volume=>'i', energy=>'b', fwguid=>'s', model=>'s', low_ram_attr=>'s'}, "mktunes");
+GetOptions( \%opts, "version", "help|h", "ipod-name|n=s", "mount|m=s",
+    "volume|v=i", "energy|e", "fwguid|g=s" );
+GNUpod::FooBar::GetConfig(
+    \%opts,
+    {
+        'ipod-name'  => 's',
+        mount        => 's',
+        volume       => 'i',
+        energy       => 'b',
+        fwguid       => 's',
+        model        => 's',
+        low_ram_attr => 's'
+    },
+    "mktunes"
+);
 $opts{'ipod-name'} ||= "GNUpod ###__VERSION__###";
-
 
 usage()   if $opts{help};
 version() if $opts{version};
@@ -53,103 +63,127 @@ main();
 #########################################################################
 # main() :-)
 sub main {
-	my $con = GNUpod::FooBar::connect(\%opts);
-	usage("$con->{status}\n") if $con->{status};
-	
-	my $sysinfo = GNUpod::SysInfo::GetDeviceInformation(Connection=>$con, NoDeviceSearch=>(defined($opts{fwguid}) ? 1 : 0 ) );
-	my $fwguid  = (defined($opts{fwguid}) ? $opts{fwguid} : $sysinfo->{FirewireGuid}); # Always prefer fwguid. may be 0 to disable search
-	
-	print "> Loading ArtworkDB...";
-	my $AWDB  = GNUpod::ArtworkDB->new(Connection=>$con, DropUnseen=>0);
-	$AWDB->LoadArtworkDb;
-	print "done\n";
-	
-	$mktunes = GNUpod::Mktunes->new(Connection=>$con, iPodName=>$opts{'ipod-name'}, Artwork=>$AWDB);
-	
-	print "> Parsing XML document...\n";
-	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Could not read $con->{xml}, did you run gnupod-init ?");
-	
-	print "\r> ".$mktunes->GetFileCount." files parsed, assembling iTunesDB...\n";
+    my $con = GNUpod::FooBar::connect( \%opts );
+    usage("$con->{status}\n") if $con->{status};
 
-	my $keep = {};
-	if ($opts{'low_ram_attr'}) {
-		foreach(split(/[ ,]+/,$opts{'low_ram_attr'})) {
-			$keep->{$_}++;
-		}
-		print "> Low ram option active. GNUpod will only add a limited\n";
-		print "> number of attributes to preserve RAM on the iPod:\n";
-		print "> ".join(" ", sort(keys(%{$keep})))."\n";
-	}
-	$mktunes->WriteItunesDB(keep=>$keep);
-	
-	if($fwguid) {
-		my $k = GNUpod::Hash58::HashItunesDB(FirewireId=>$fwguid, iTunesDB=>$con->{itunesdb});
-	}
-	else {
-		print "> iPod-GUID not detected. You can force the GUID using --fwguid\n";
-	}
-	
-	print "> Writing new iTunesShuffle DB\n";
-	$mktunes->WriteItunesSD;
-	
-	print "> Updating Sync-Status\n";
-	GNUpod::FooBar::SetItunesDBAsInSync($con);   # iTunesDB is in sync with GNUtunesDB.xml
-	GNUpod::FooBar::SetOnTheGoAsValid($con);     # ..and we can now, again, trust OnTheGo data
-	GNUpod::FooBar::WipeShuffleStat($con);       # Forces reshuffling of iPod-Shuffle
-	print "\nYou can now umount your iPod. [Files: ".$mktunes->GetFileCount."]\n";
-	print " - May the iPod be with you!\n\n";
+    my $sysinfo = GNUpod::SysInfo::GetDeviceInformation(
+        Connection     => $con,
+        NoDeviceSearch => ( defined( $opts{fwguid} ) ? 1 : 0 )
+    );
+    my $fwguid =
+      ( defined( $opts{fwguid} ) ? $opts{fwguid} : $sysinfo->{FirewireGuid} )
+      ;    # Always prefer fwguid. may be 0 to disable search
+
+    print "> Loading ArtworkDB...";
+    my $AWDB = GNUpod::ArtworkDB->new( Connection => $con, DropUnseen => 0 );
+    $AWDB->LoadArtworkDb;
+    print "done\n";
+
+    $mktunes = GNUpod::Mktunes->new(
+        Connection => $con,
+        iPodName   => $opts{'ipod-name'},
+        Artwork    => $AWDB
+    );
+
+    print "> Parsing XML document...\n";
+    GNUpod::XMLhelper::doxml( $con->{xml} )
+      or usage("Could not read $con->{xml}, did you run gnupod-init ?");
+
+    print "\r> "
+      . $mktunes->GetFileCount
+      . " files parsed, assembling iTunesDB...\n";
+
+    my $keep = {};
+    if ( $opts{'low_ram_attr'} ) {
+        foreach ( split( /[ ,]+/, $opts{'low_ram_attr'} ) ) {
+            $keep->{$_}++;
+        }
+        print "> Low ram option active. GNUpod will only add a limited\n";
+        print "> number of attributes to preserve RAM on the iPod:\n";
+        print "> " . join( " ", sort( keys( %{$keep} ) ) ) . "\n";
+    }
+    $mktunes->WriteItunesDB( keep => $keep );
+
+    if ($fwguid) {
+        my $k = GNUpod::Hash58::HashItunesDB(
+            FirewireId => $fwguid,
+            iTunesDB   => $con->{itunesdb}
+        );
+    }
+    else {
+        print
+          "> iPod-GUID not detected. You can force the GUID using --fwguid\n";
+    }
+
+    print "> Writing new iTunesShuffle DB\n";
+    $mktunes->WriteItunesSD;
+
+    print "> Updating Sync-Status\n";
+    GNUpod::FooBar::SetItunesDBAsInSync($con)
+      ;    # iTunesDB is in sync with GNUtunesDB.xml
+    GNUpod::FooBar::SetOnTheGoAsValid($con)
+      ;    # ..and we can now, again, trust OnTheGo data
+    GNUpod::FooBar::WipeShuffleStat($con);  # Forces reshuffling of iPod-Shuffle
+    print "\nYou can now umount your iPod. [Files: "
+      . $mktunes->GetFileCount . "]\n";
+    print " - May the iPod be with you!\n\n";
 
 }
-
 
 #########################################################################
 # Called by doxml if it finds a new <file tag
 sub newfile {
-	my($item) = @_;
-	
-	if($opts{energy}) {
-		# Crop title if requested. Note: Cropping it here affects regexps! 
-		# But ... this had only a visible effect on 1st-gen ipods
-		# and didn't work well with iTunes anyway..
-		$item->{file}->{title} = Unicode::String::utf8($item->{file}->{title})->substr(0,18)->utf8;
-	}
-	
-	#Volume adjust
-	if($opts{volume}) {
-		$item->{file}->{volume} += int($opts{volume});
-		if(abs($item->{file}->{volume}) > 100) {
-			print "\n** Warning: volume=\"$item->{file}->{volume}\" out of range: Volume set to ";
-			$item->{file}->{volume} = ($item->{file}->{volume}/abs($item->{file}->{volume})*100);
-			print "$item->{file}->{volume}% for id $item->{file}->{id}\n";
-		}
-	}
+    my ($item) = @_;
 
-	my $id = $mktunes->AddFile($item->{file});
-	print "\r> $id files parsed" if $id % 96 == 0;
+    if ( $opts{energy} ) {
+
+        # Crop title if requested. Note: Cropping it here affects regexps!
+        # But ... this had only a visible effect on 1st-gen ipods
+        # and didn't work well with iTunes anyway..
+        $item->{file}->{title} =
+          Unicode::String::utf8( $item->{file}->{title} )
+          ->substr( 0, 18 )
+          ->utf8;
+    }
+
+    #Volume adjust
+    if ( $opts{volume} ) {
+        $item->{file}->{volume} += int( $opts{volume} );
+        if ( abs( $item->{file}->{volume} ) > 100 ) {
+            print
+"\n** Warning: volume=\"$item->{file}->{volume}\" out of range: Volume set to ";
+            $item->{file}->{volume} =
+              ( $item->{file}->{volume} /
+                  abs( $item->{file}->{volume} ) *
+                  100 );
+            print "$item->{file}->{volume}% for id $item->{file}->{id}\n";
+        }
+    }
+
+    my $id = $mktunes->AddFile( $item->{file} );
+    print "\r> $id files parsed" if $id % 96 == 0;
 }
 
 #########################################################################
 # Called by doxml if it a new <playlist.. has been found
 sub newpl {
-	my($item, $name, $type) = @_;
-	if($type eq "pl") {
-		$mktunes->AddNormalPlaylistItem(Name=>$name, Item=>$item);
-	}
-	elsif($type eq "spl") {
-		$mktunes->AddSmartPlaylistItem(Name=>$name, Item=>$item);
-	}
-	else {
-		warn "$0: unknown playlist type '$type' skipped\n";
-	}
+    my ( $item, $name, $type ) = @_;
+    if ( $type eq "pl" ) {
+        $mktunes->AddNormalPlaylistItem( Name => $name, Item => $item );
+    }
+    elsif ( $type eq "spl" ) {
+        $mktunes->AddSmartPlaylistItem( Name => $name, Item => $item );
+    }
+    else {
+        warn "$0: unknown playlist type '$type' skipped\n";
+    }
 }
-
-
 
 #########################################################################
 # Usage information
 sub usage {
-	my($rtxt) = @_;
-die << "EOF";
+    my ($rtxt) = @_;
+    die <<"EOF";
 $rtxt
 Usage: mktunes.pl [-h] [-m directory] [-v VALUE]
 
@@ -169,7 +203,7 @@ EOF
 #########################################################################
 # Displays current version
 sub version {
-die << "EOF";
+    die <<"EOF";
 mktunes.pl (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2007
 

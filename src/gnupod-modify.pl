@@ -32,7 +32,8 @@ use Getopt::Long;
 
 my $programName = "gnupod-modify.pl";
 
-my $fullVersionString = "$programName Version ###__VERSION__### (C) Heinrich Langos";
+my $fullVersionString =
+  "$programName Version ###__VERSION__### (C) Heinrich Langos";
 
 use vars qw(%opts @keeplist);
 
@@ -40,54 +41,62 @@ my $AWDB;
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
-my $getoptres = GetOptions(\%opts, "version", "help|h", "mount|m=s",
-	"interactive|i", "force",
-	"set=s@",
-	@GNUpod::FindHelper::findoptions
-);
+my $getoptres = GetOptions( \%opts, "version", "help|h", "mount|m=s",
+    "interactive|i", "force", "set=s@", @GNUpod::FindHelper::findoptions );
 
 # take model, mountpoint, automktunes, and bgcolor from gnupod-search preferences
 # this should not override options that are already set in opts
-GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s', automktunes=>'b', bgcolor=>'s'}, "gnupod-search");
+GNUpod::FooBar::GetConfig( \%opts,
+    { mount => 's', model => 's', automktunes => 'b', bgcolor => 's' },
+    "gnupod-search" );
 
-
-usage()   if ($opts{help} || !$getoptres );
-version() if $opts{version};
+usage()                              if ( $opts{help} || !$getoptres );
+version()                            if $opts{version};
 GNUpod::FindHelper::fullattributes() if $opts{'list-attributes'};
-if ($opts{'interactive'} && $opts{'force'}) { usage("Can't use --force and --interactive together.") };
+if ( $opts{'interactive'} && $opts{'force'} ) {
+    usage("Can't use --force and --interactive together.");
+}
 
-my @resultlist=();
-my %resultids=(); #only used for second pass to skip searching the resultlist
+my @resultlist = ();
+my %resultids  = (); #only used for second pass to skip searching the resultlist
 
-my $max_non_interactive_modify = 20; #how many files get modified without asking (if not forced)
+my $max_non_interactive_modify =
+  20;                #how many files get modified without asking (if not forced)
 
-my $foo = GNUpod::FindHelper::process_options(\%opts);
+my $foo = GNUpod::FindHelper::process_options( \%opts );
 
-if (!defined $foo) { usage("Trouble parsing find options.") };
-if (ref(\$foo) eq "SCALAR") { usage($foo)};
+if ( !defined $foo )            { usage("Trouble parsing find options.") }
+if ( ref( \$foo ) eq "SCALAR" ) { usage($foo) }
 
 my $changingArtwork;
 my %changingAttributes = ();
-for (@{$opts{set}}) {
-	if (/^(.+?)=(.*)$/) {
-		if (defined(GNUpod::FindHelper::resolve_attribute($1))) {
-			# TODO check for readonly flag
-			$changingAttributes{$1}=$2;
-		} elsif ($1 eq 'artwork') {
-			$changingArtwork=$2;
-		} else {
-			usage("Unknown attribute \"".$1."\". ".GNUpod::FindHelper::help_find_attribute($1));
-		}
-	} else {
-		usage("Trouble parsing set option (\"$_\").");
-	}
+for ( @{ $opts{set} } ) {
+    if (/^(.+?)=(.*)$/) {
+        if ( defined( GNUpod::FindHelper::resolve_attribute($1) ) ) {
+
+            # TODO check for readonly flag
+            $changingAttributes{$1} = $2;
+        }
+        elsif ( $1 eq 'artwork' ) {
+            $changingArtwork = $2;
+        }
+        else {
+            usage(  "Unknown attribute \""
+                  . $1 . "\". "
+                  . GNUpod::FindHelper::help_find_attribute($1) );
+        }
+    }
+    else {
+        usage("Trouble parsing set option (\"$_\").");
+    }
 }
 
 # -> Connect the iPod
-my $connection = GNUpod::FooBar::connect(\%opts);
-usage($connection->{status}."\n") if $connection->{status};
+my $connection = GNUpod::FooBar::connect( \%opts );
+usage( $connection->{status} . "\n" ) if $connection->{status};
 
-my $firstrun = 1; #first run will look for the songs and playlists to modify. the second run will modify them.
+my $firstrun = 1
+  ; #first run will look for the songs and playlists to modify. the second run will modify them.
 my $modificationconfirmed = 0;
 
 main($connection);
@@ -96,104 +105,133 @@ main($connection);
 # Worker
 sub main {
 
-	my($con) = @_;
+    my ($con) = @_;
 
-	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
+    GNUpod::XMLhelper::doxml( $con->{xml} )
+      or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
-	#print "resultlist:\n".Dumper(\@resultlist);
+    #print "resultlist:\n".Dumper(\@resultlist);
 
-	# sort result list according to the user's wishes
-	@resultlist = sort GNUpod::FindHelper::comparesongs @resultlist;
+    # sort result list according to the user's wishes
+    @resultlist = sort GNUpod::FindHelper::comparesongs @resultlist;
 
-	# crop result list according to the user's wishes
-	@resultlist = GNUpod::FindHelper::croplist({results => \@resultlist});
+    # crop result list according to the user's wishes
+    @resultlist = GNUpod::FindHelper::croplist( { results => \@resultlist } );
 
-	if (@resultlist) {
-		#output results
-		GNUpod::FindHelper::prettyprint ({ results => \@resultlist }) if @resultlist;
+    if (@resultlist) {
 
-		#ask confirmation
-		if ($opts{force}) {
-			$modificationconfirmed = 1;
-		} elsif ($opts{interactive} or (scalar(@resultlist) > $max_non_interactive_modify)) {
-			print "Modify ? (y/n) ";# request confirmation
-			my $answer = "n";
-			chomp ( $answer = <> );
-			$modificationconfirmed = 1 if ($answer eq "y");
-		} else {
-			$modificationconfirmed = 1;
-		}
+        #output results
+        GNUpod::FindHelper::prettyprint( { results => \@resultlist } )
+          if @resultlist;
 
-		#start second run to modify selected files/playlists
-		if ($modificationconfirmed) {
-			foreach my $res (@resultlist) { $resultids{$res->{id}}=1; }
-			$firstrun = 0;
-			if (defined($changingArtwork)) {
-				$AWDB = GNUpod::ArtworkDB->new(Connection=>$connection, DropUnseen=>1);
-				if( $AWDB->PrepareImage(File=>$changingArtwork, Model=>$opts{model}, bgcolor=>$opts{bgcolor}) ) {
-					$AWDB->LoadArtworkDb or die "Failed to load artwork database\n";
-				} else {
-					warn "$0: Could not load $changingAttributes{artwork}, skipping artwork\n";
-					undef $changingArtwork;
-				}
-			}
-			GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
-			GNUpod::XMLhelper::writexml($con,{automktunes=>$opts{automktunes}});
-			if (defined($changingArtwork)) {
-				$AWDB->WriteArtworkDb;
-			}
-		}
-	}
+        #ask confirmation
+        if ( $opts{force} ) {
+            $modificationconfirmed = 1;
+        }
+        elsif ( $opts{interactive}
+            or ( scalar(@resultlist) > $max_non_interactive_modify ) )
+        {
+            print "Modify ? (y/n) ";    # request confirmation
+            my $answer = "n";
+            chomp( $answer = <> );
+            $modificationconfirmed = 1 if ( $answer eq "y" );
+        }
+        else {
+            $modificationconfirmed = 1;
+        }
+
+        #start second run to modify selected files/playlists
+        if ($modificationconfirmed) {
+            foreach my $res (@resultlist) { $resultids{ $res->{id} } = 1; }
+            $firstrun = 0;
+            if ( defined($changingArtwork) ) {
+                $AWDB = GNUpod::ArtworkDB->new(
+                    Connection => $connection,
+                    DropUnseen => 1
+                );
+                if (
+                    $AWDB->PrepareImage(
+                        File    => $changingArtwork,
+                        Model   => $opts{model},
+                        bgcolor => $opts{bgcolor}
+                    )
+                  )
+                {
+                    $AWDB->LoadArtworkDb
+                      or die "Failed to load artwork database\n";
+                }
+                else {
+                    warn
+"$0: Could not load $changingAttributes{artwork}, skipping artwork\n";
+                    undef $changingArtwork;
+                }
+            }
+            GNUpod::XMLhelper::doxml( $con->{xml} )
+              or
+              usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
+            GNUpod::XMLhelper::writexml( $con,
+                { automktunes => $opts{automktunes} } );
+            if ( defined($changingArtwork) ) {
+                $AWDB->WriteArtworkDb;
+            }
+        }
+    }
 }
-
 
 #############################################
 # Eventhandler for FILE items
 sub newfile {
-	my($fileTag) =  @_;
-	if ($firstrun) {
-		if (GNUpod::FindHelper::filematches($fileTag)) {
-			push @resultlist, \%{$fileTag->{file}};  #add a reference to @resultlist
-		}
-	} else {
-		if ($resultids{$fileTag->{file}{id}}) {
-			# make changes to the file
-			for (keys (%changingAttributes)) {
-				# set the fileTags attributes to their new values
-				$fileTag->{file}{$_} = $changingAttributes{$_};
-			}
-			if (defined($changingArtwork)) {
-				# -> Add/Set artwork
-				$fileTag->{file}{has_artwork} = 1;
-				$fileTag->{file}{artworkcnt}  = 1;
-				$fileTag->{file}{dbid_1}      = $AWDB->InjectImage;
-			}
-		}
-		# add it to XML
-		GNUpod::XMLhelper::mkfile($fileTag);
+    my ($fileTag) = @_;
+    if ($firstrun) {
+        if ( GNUpod::FindHelper::filematches($fileTag) ) {
+            push @resultlist,
+              \%{ $fileTag->{file} };    #add a reference to @resultlist
+        }
+    }
+    else {
+        if ( $resultids{ $fileTag->{file}{id} } ) {
 
-		# -> and keep artwork
-		$AWDB->KeepImage($fileTag->{file}{dbid_1});
-	}
+            # make changes to the file
+            for ( keys(%changingAttributes) ) {
+
+                # set the fileTags attributes to their new values
+                $fileTag->{file}{$_} = $changingAttributes{$_};
+            }
+            if ( defined($changingArtwork) ) {
+
+                # -> Add/Set artwork
+                $fileTag->{file}{has_artwork} = 1;
+                $fileTag->{file}{artworkcnt}  = 1;
+                $fileTag->{file}{dbid_1}      = $AWDB->InjectImage;
+            }
+        }
+
+        # add it to XML
+        GNUpod::XMLhelper::mkfile($fileTag);
+
+        # -> and keep artwork
+        $AWDB->KeepImage( $fileTag->{file}{dbid_1} );
+    }
 }
 
 #############################################
 # Eventhandler for playlist items
 sub newpl {
-	my ($el, $name, $plt) = @_;
-	if ($firstrun) {
-		return;
-	} else {
-		GNUpod::XMLhelper::mkfile($el,{$plt."name"=>$name});
-	}
+    my ( $el, $name, $plt ) = @_;
+    if ($firstrun) {
+        return;
+    }
+    else {
+        GNUpod::XMLhelper::mkfile( $el, { $plt . "name" => $name } );
+    }
 }
 
 ###############################################################
 # Basic help
 sub usage {
-my($rtxt) = @_;
-$rtxt = "" if (! defined($rtxt));
-die << "EOF";
+    my ($rtxt) = @_;
+    $rtxt = "" if ( !defined($rtxt) );
+    die <<"EOF";
 $fullVersionString
 $rtxt
 Usage: $programName ...
@@ -210,9 +248,8 @@ Report bugs to <bug-gnupod\@nongnu.org>
 EOF
 }
 
-
 sub version {
-die << "EOF";
+    die <<"EOF";
 $fullVersionString
 
 This is free software; see the source for copying conditions.  There is NO

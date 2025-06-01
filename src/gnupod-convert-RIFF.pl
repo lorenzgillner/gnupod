@@ -26,46 +26,48 @@ use warnings;
 use GNUpod::FooBar;
 use GNUpod::FileMagic;
 
-
-my $file  = $ARGV[0] or exit(1);
-my $gimme = $ARGV[1];
+my $file    = $ARGV[0] or exit(1);
+my $gimme   = $ARGV[1];
 my $quality = $ARGV[2];
 
-if(!(-r $file)) {
-	warn "$file is not readable!\n";
-	exit(1);
+if ( !( -r $file ) ) {
+    warn "$file is not readable!\n";
+    exit(1);
 }
-elsif($gimme eq "GET_META") {
-	#..not much
-	print "_MEDIATYPE:".(GNUpod::FileMagic::MEDIATYPE_VIDEO)."\n";
-	print "FORMAT:MP4\n";
+elsif ( $gimme eq "GET_META" ) {
+
+    #..not much
+    print "_MEDIATYPE:" . (GNUpod::FileMagic::MEDIATYPE_VIDEO) . "\n";
+    print "FORMAT:MP4\n";
 }
-elsif($gimme eq "GET_VIDEO") {
-	my $tmpout = GNUpod::FooBar::get_u_path("/tmp/gnupod_video", "mp4");
-	my $acodec = check_ffmpeg_aac();
-	
-	my $x = system("ffmpeg", "-i", $file, "-acodec", $acodec, "-ab", "128k", "-vcodec", "mpeg4",
-	               "-b", "1200kb", "-mbd", 2, "-flags", "+4mv+trell", "-aic", 2, "-cmp", 2,
-	               "-subcmp", 2, "-s", "320x240", "-r", "29.97", $tmpout);
-	print "PATH:$tmpout\n";
+elsif ( $gimme eq "GET_VIDEO" ) {
+    my $tmpout = GNUpod::FooBar::get_u_path( "/tmp/gnupod_video", "mp4" );
+    my $acodec = check_ffmpeg_aac();
+
+    my $x = system(
+        "ffmpeg", "-i",   $file,     "-acodec", $acodec,
+        "-ab",    "128k", "-vcodec", "mpeg4",   "-b",
+        "1200kb", "-mbd", 2,         "-flags",  "+4mv+trell",
+        "-aic",   2,      "-cmp",    2,         "-subcmp",
+        2,        "-s",   "320x240", "-r",      "29.97",
+        $tmpout
+    );
+    print "PATH:$tmpout\n";
 }
 else {
-	warn "$0 can't encode into $gimme\n";
-	exit(1);
+    warn "$0 can't encode into $gimme\n";
+    exit(1);
 }
-
 
 # Check if ffmpeg knows 'libfaac' or if we
 # still shall call it with AAC
 sub check_ffmpeg_aac {
-	my @newstyle = grep(/\s+EA\s+libfaac/,split(/\n/,
-	               `ffmpeg -formats 2> /dev/null`));
-	return (defined(@newstyle) ? 'libfaac' : 'aac');
+    my @newstyle =
+      grep( /\s+EA\s+libfaac/, split( /\n/, `ffmpeg -formats 2> /dev/null` ) );
+    return ( defined(@newstyle) ? 'libfaac' : 'aac' );
 }
 
-
 exit(0);
-
 
 =head1 NAME
 

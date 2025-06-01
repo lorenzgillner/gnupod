@@ -15,70 +15,69 @@ use vars qw(%opts);
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
-my $getoptres = GetOptions(\%opts, "version", "help|h", "mount|m=s",
-);
+my $getoptres = GetOptions( \%opts, "version", "help|h", "mount|m=s", );
 
 # take model and mountpoint from gnupod-search preferences
-GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s'}, "gnupod-fix-ids");
+GNUpod::FooBar::GetConfig( \%opts, { mount => 's', model => 's' },
+    "gnupod-fix-ids" );
 
-usage()   if ($opts{help} || !$getoptres );
+usage()   if ( $opts{help} || !$getoptres );
 version() if $opts{version};
 
 my $pass = 0;
 
-my $connection = GNUpod::FooBar::connect(\%opts);
-usage($connection->{status}."\n") if $connection->{status};
+my $connection = GNUpod::FooBar::connect( \%opts );
+usage( $connection->{status} . "\n" ) if $connection->{status};
 
 main($connection);
 
 exit 0;
 
 sub main {
-	my($con) = @_;
+    my ($con) = @_;
 
-	# pass one, just to get id map
-	GNUpod::XMLhelper::doxml($con->{xml}) or 
-		usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
+    # pass one, just to get id map
+    GNUpod::XMLhelper::doxml( $con->{xml} )
+      or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
-	# pass two: fix up ids, and insert into new XML
-	$pass++;
-	GNUpod::XMLhelper::doxml($con->{xml}) or 
-		usage("Failed to parse $con->{xml}\n");
+    # pass two: fix up ids, and insert into new XML
+    $pass++;
+    GNUpod::XMLhelper::doxml( $con->{xml} )
+      or usage("Failed to parse $con->{xml}\n");
 
-	GNUpod::XMLhelper::writexml($con);
+    GNUpod::XMLhelper::writexml($con);
 }
 
 sub newfile {
-	my ($el) = @_;
-	if($pass != 1) {
-		return;
-	}
+    my ($el) = @_;
+    if ( $pass != 1 ) {
+        return;
+    }
 
-	my $id = $el->{file}->{id};
-	if ($id == 0) {
-		my $newid = GNUpod::XMLhelper::get_new_id();
-		warn "Fixing id $id -> $newid";
-		$el->{file}->{id}=$newid
-	}
+    my $id = $el->{file}->{id};
+    if ( $id == 0 ) {
+        my $newid = GNUpod::XMLhelper::get_new_id();
+        warn "Fixing id $id -> $newid";
+        $el->{file}->{id} = $newid;
+    }
 
-	GNUpod::XMLhelper::mkfile($el);
+    GNUpod::XMLhelper::mkfile($el);
 }
 
 sub newpl {
-	my($el, $name, $plt) = @_;
-	if($pass != 1) {
-		return;
-	}
-	GNUpod::XMLhelper::mkfile($el,{$plt."name"=>$name}); 
+    my ( $el, $name, $plt ) = @_;
+    if ( $pass != 1 ) {
+        return;
+    }
+    GNUpod::XMLhelper::mkfile( $el, { $plt . "name" => $name } );
 }
-
 
 ###############################################################
 # Basic help
 sub usage {
-my($rtxt) = @_;
-$rtxt = "" if (! defined($rtxt));
-die << "EOF";
+    my ($rtxt) = @_;
+    $rtxt = "" if ( !defined($rtxt) );
+    die <<"EOF";
 $fullversionstring
 $rtxt
 Usage: $programName ...
@@ -90,9 +89,8 @@ Report bugs to <bug-gnupod\@nongnu.org>
 EOF
 }
 
-
 sub version {
-die << "EOF";
+    die <<"EOF";
 $fullversionstring
 
 This is free software; see the source for copying conditions.  There is NO

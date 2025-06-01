@@ -29,31 +29,34 @@ use GNUpod::XMLhelper;
 use Getopt::Long;
 use vars qw(%opts);
 
-
 print "gnupod-init ###__VERSION__### (C) Adrian Ulrich\n";
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
 #Don't add xml and itunes opts.. we *NEED* the mount opt to be set..
-GetOptions(\%opts, "version", "help|h", "mount|m=s", "disable-convert|d", "france|f", "noask", "model=s", "fwguid|g=s");
-GNUpod::FooBar::GetConfig(\%opts, {model=>'s'}, "gnupod-init");
+GetOptions(
+    \%opts,              "version",  "help|h", "mount|m=s",
+    "disable-convert|d", "france|f", "noask",  "model=s",
+    "fwguid|g=s"
+);
+GNUpod::FooBar::GetConfig( \%opts, { model => 's' }, "gnupod-init" );
+
 #gnupod-init does not read configuration files!
 
-
-usage() if $opts{help};
+usage()   if $opts{help};
 version() if $opts{version};
 
 go();
 
-
 sub go {
- #Disable autosync
- $opts{_no_sync} = 1;
- my $con = GNUpod::FooBar::connect(\%opts);
- usage("$con->{status}\n") if $con->{status};
+
+    #Disable autosync
+    $opts{_no_sync} = 1;
+    my $con = GNUpod::FooBar::connect( \%opts );
+    usage("$con->{status}\n") if $con->{status};
 
 ## Ask the user, if he still knows what he/she's doing..
-print << "EOF";
+    print <<"EOF";
 
 Your iPod is mounted at $opts{mount}, ok ?
 *********************************************************
@@ -76,76 +79,77 @@ Hit ENTER to continue or CTRL+C to abort
 EOF
 ##
 
-<STDIN> unless $opts{noask};
- 
- print "Creating directory structure on $opts{mount}\n\n";
- print "> AppFolders:\n";
- 
- foreach( ($con->{rootdir}, $con->{musicdir},
-             $con->{itunesdir}, $con->{etc}) ) {
-   my $path = $_;
-   next if -d $path;
-   mkdir("$path") or die "Could not create $path ($!)\n";
-   print "+$path\n";
- }
- 
- print "> Music folders:\n";
- for(0..19) {
-   my $path = sprintf($con->{musicdir}."/F%02d", $_);
-   next if -d $path;
-   mkdir("$path") or die "Could not create $path ($!)\n";
-   print "+$path\n";
- }
+    <STDIN> unless $opts{noask};
 
- if($opts{france}) {
-  print "> Creating 'Limit' file (because you used --france)\n";
-  mkdir("$con->{rootdir}/Device");
-  open(LIMIT, ">$con->{rootdir}/Device/Limit") or die "Failed: $!\n";
-   print LIMIT "216\n"; #Why?
-  close(LIMIT);
- }
- elsif(-e "$con->{rootdir}/Device/Limit") {
-  print "> Removing 'Limit' file (because you didn't use --france)\n";
-  unlink("$con->{rootdir}/Device/Limit");
- }
- else {
-  print "> No 'Limit' file created or deleted..\n";
- }
- 
- print "> Creating dummy files\n";
- 
- GNUpod::XMLhelper::writexml($con);
+    print "Creating directory structure on $opts{mount}\n\n";
+    print "> AppFolders:\n";
 
- my $t2pfail = 0;
- if(-e $con->{itunesdb} && !$opts{'disable-convert'}) {
- #We have an iTunesDB, call tunes2pod.pl
-  print "Found *existing* iTunesDB, running tunes2pod.pl\n";
-  $t2pfail = system("$con->{bindir}/tunes2pod.pl", "--force", "-m", $opts{mount});
- }
- else {
- #No iTunesDB, run mktunes.pl
-  print "No iTunesDB found, running mktunes.pl\n";
-  my @mktunescmd = ("$con->{bindir}/mktunes.pl", "-m" ,"$opts{mount}");
-  if ($opts{'fwguid'}) { push @mktunescmd, "-g", "$opts{fwguid}"; } 
-  $t2pfail = system(@mktunescmd);
- }
- 
- if($t2pfail) {
-  print "\n Done\n ..Looks like something went wrong :-/\n";
- }
- else {
-  print "\n Done\n   Your iPod is now ready for GNUpod :)\n";
- }
- 
+    foreach (
+        ( $con->{rootdir}, $con->{musicdir}, $con->{itunesdir}, $con->{etc} ) )
+    {
+        my $path = $_;
+        next if -d $path;
+        mkdir("$path") or die "Could not create $path ($!)\n";
+        print "+$path\n";
+    }
+
+    print "> Music folders:\n";
+    for ( 0 .. 19 ) {
+        my $path = sprintf( $con->{musicdir} . "/F%02d", $_ );
+        next if -d $path;
+        mkdir("$path") or die "Could not create $path ($!)\n";
+        print "+$path\n";
+    }
+
+    if ( $opts{france} ) {
+        print "> Creating 'Limit' file (because you used --france)\n";
+        mkdir("$con->{rootdir}/Device");
+        open( LIMIT, ">$con->{rootdir}/Device/Limit" ) or die "Failed: $!\n";
+        print LIMIT "216\n";    #Why?
+        close(LIMIT);
+    }
+    elsif ( -e "$con->{rootdir}/Device/Limit" ) {
+        print "> Removing 'Limit' file (because you didn't use --france)\n";
+        unlink("$con->{rootdir}/Device/Limit");
+    }
+    else {
+        print "> No 'Limit' file created or deleted..\n";
+    }
+
+    print "> Creating dummy files\n";
+
+    GNUpod::XMLhelper::writexml($con);
+
+    my $t2pfail = 0;
+    if ( -e $con->{itunesdb} && !$opts{'disable-convert'} ) {
+
+        #We have an iTunesDB, call tunes2pod.pl
+        print "Found *existing* iTunesDB, running tunes2pod.pl\n";
+        $t2pfail = system( "$con->{bindir}/tunes2pod.pl", "--force", "-m",
+            $opts{mount} );
+    }
+    else {
+        #No iTunesDB, run mktunes.pl
+        print "No iTunesDB found, running mktunes.pl\n";
+        my @mktunescmd = ( "$con->{bindir}/mktunes.pl", "-m", "$opts{mount}" );
+        if ( $opts{'fwguid'} ) { push @mktunescmd, "-g", "$opts{fwguid}"; }
+        $t2pfail = system(@mktunescmd);
+    }
+
+    if ($t2pfail) {
+        print "\n Done\n ..Looks like something went wrong :-/\n";
+    }
+    else {
+        print "\n Done\n   Your iPod is now ready for GNUpod :)\n";
+    }
+
 }
-
-
 
 ###############################################################
 # Basic help
 sub usage {
-my($rtxt) = @_;
-die << "EOF";
+    my ($rtxt) = @_;
+    die <<"EOF";
 $rtxt
 Usage: gnupod-init [-h] [-m directory]
 
@@ -167,7 +171,7 @@ EOF
 }
 
 sub version {
-die << "EOF";
+    die <<"EOF";
 gnupod-init (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2004
 

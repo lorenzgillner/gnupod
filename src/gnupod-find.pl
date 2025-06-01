@@ -27,29 +27,31 @@ use strict;
 use warnings;
 use GNUpod::XMLhelper;
 use GNUpod::FindHelper;
+
 #use GNUpod::ArtworkDB;
 use Getopt::Long;
 
 my $programName = "gnupod-find.pl";
 
-my $fullversionstring = "$programName Version ###__VERSION__### (C) Heinrich Langos";
+my $fullversionstring =
+  "$programName Version ###__VERSION__### (C) Heinrich Langos";
 
 use vars qw(%opts);
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
-
-my $getoptres = GetOptions(\%opts, "version", "help|h", "mount|m=s",
-	@GNUpod::FindHelper::findoptions
+my $getoptres = GetOptions(
+    \%opts, "version", "help|h", "mount|m=s",
+    @GNUpod::FindHelper::findoptions
 
 );
 
 # take model and mountpoint from gnupod-search preferences
-GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s'}, "gnupod-search");
+GNUpod::FooBar::GetConfig( \%opts, { mount => 's', model => 's' },
+    "gnupod-search" );
 
-
-usage()   if ($opts{help} || !$getoptres );
-version() if $opts{version};
+usage()                              if ( $opts{help} || !$getoptres );
+version()                            if $opts{version};
 GNUpod::FindHelper::fullattributes() if $opts{'list-attributes'};
 
 ## all work but 1 and 2 are deprecated
@@ -62,12 +64,12 @@ GNUpod::FindHelper::fullattributes() if $opts{'list-attributes'};
 ## did i mention that i hate perl?
 #print "5: ".$GNUpod::FindHelper::FILEATTRDEF->{year}->{help}."\n";
 
-my @resultlist=();
+my @resultlist = ();
 
-my $foo = GNUpod::FindHelper::process_options(\%opts);
+my $foo = GNUpod::FindHelper::process_options( \%opts );
 
-if (!defined $foo) { usage("Trouble parsing find options.") };
-if (ref(\$foo) eq "SCALAR") { usage($foo)};
+if ( !defined $foo )            { usage("Trouble parsing find options.") }
+if ( ref( \$foo ) eq "SCALAR" ) { usage($foo) }
 
 #my @filterlist = @{${$foo}[0]};
 #my @sortlist = @{${$foo}[1]};
@@ -75,10 +77,9 @@ if (ref(\$foo) eq "SCALAR") { usage($foo)};
 # well isn't that an ugly piece of code? it takes the array reference foo, dereferences it,
 # takes one element (another array reference) out of it and dereferences that one before assigning it
 
-
 # -> Connect the iPod
-my $connection = GNUpod::FooBar::connect(\%opts);
-usage($connection->{status}."\n") if $connection->{status};
+my $connection = GNUpod::FooBar::connect( \%opts );
+usage( $connection->{status} . "\n" ) if $connection->{status};
 
 main($connection);
 
@@ -86,28 +87,30 @@ main($connection);
 # Worker
 sub main {
 
-	my($con) = @_;
+    my ($con) = @_;
 
-	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
+    GNUpod::XMLhelper::doxml( $con->{xml} )
+      or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
-	#print "resultlist:\n".Dumper(\@resultlist);
+    #print "resultlist:\n".Dumper(\@resultlist);
 
-	@resultlist = sort GNUpod::FindHelper::comparesongs @resultlist;
+    @resultlist = sort GNUpod::FindHelper::comparesongs @resultlist;
 
-	@resultlist = GNUpod::FindHelper::croplist({results => \@resultlist});
-	#print "sortedresultlist:\n".Dumper(\@resultlist);
-	GNUpod::FindHelper::prettyprint ({ results => \@resultlist }) if (@resultlist);
+    @resultlist = GNUpod::FindHelper::croplist( { results => \@resultlist } );
+
+    #print "sortedresultlist:\n".Dumper(\@resultlist);
+    GNUpod::FindHelper::prettyprint( { results => \@resultlist } )
+      if (@resultlist);
 }
-
 
 #############################################
 # Eventhandler for FILE items
 sub newfile {
-	my($el) =  @_;
+    my ($el) = @_;
 
-	if (GNUpod::FindHelper::filematches($el)) {
-		push @resultlist, \%{$el->{file}};  #add a reference to @resultlist
-	}
+    if ( GNUpod::FindHelper::filematches($el) ) {
+        push @resultlist, \%{ $el->{file} };    #add a reference to @resultlist
+    }
 }
 
 #############################################
@@ -118,9 +121,9 @@ sub newpl {
 ###############################################################
 # Basic help
 sub usage {
-my($rtxt) = @_;
-$rtxt = "" if (! defined($rtxt));
-die << "EOF";
+    my ($rtxt) = @_;
+    $rtxt = "" if ( !defined($rtxt) );
+    die <<"EOF";
 $fullversionstring
 $rtxt
 Usage: $programName ...
@@ -133,9 +136,8 @@ Report bugs to <bug-gnupod\@nongnu.org>
 EOF
 }
 
-
 sub version {
-die << "EOF";
+    die <<"EOF";
 $fullversionstring
 
 This is free software; see the source for copying conditions.  There is NO

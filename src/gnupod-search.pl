@@ -32,215 +32,289 @@ use vars qw(%opts @keeplist %rename_tags);
 
 use constant DEFAULT_SPACE => 32;
 
-my $dbid     = undef;  # Artwork DB-ID
-my $dirty    = 0;      # Do we need to re-write the XML version?
+my $dbid  = undef;    # Artwork DB-ID
+my $dirty = 0;        # Do we need to re-write the XML version?
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
-
-
 
 print "gnupod-search.pl Version ###__VERSION__### (C) Adrian Ulrich\n";
 
 # WARNING: If you add new options wich don't do matching, change newfile()
 #
-GetOptions(\%opts, "version", "help|h", "mount|m=s", "artist|a=s",
-                   "album|l=s", "title|t=s", "id|i=s", "rename=s@", "artwork=s",
-                   "playcount|c=s", "rating|s=s", "podcastrss|R=s", "podcastguid|U=s",
-                   "bitrate|b=s",
-                   "view=s","genre|g=s", "match-once|o", "delete");
-GNUpod::FooBar::GetConfig(\%opts, {view=>'s', mount=>'s', 'match-once'=>'b', 'automktunes'=>'b', model=>'s', bgcolor=>'s'}, "gnupod-search");
+GetOptions(
+    \%opts,           "version",         "help|h",        "mount|m=s",
+    "artist|a=s",     "album|l=s",       "title|t=s",     "id|i=s",
+    "rename=s@",      "artwork=s",       "playcount|c=s", "rating|s=s",
+    "podcastrss|R=s", "podcastguid|U=s", "bitrate|b=s",   "view=s",
+    "genre|g=s",      "match-once|o",    "delete"
+);
+GNUpod::FooBar::GetConfig(
+    \%opts,
+    {
+        view          => 's',
+        mount         => 's',
+        'match-once'  => 'b',
+        'automktunes' => 'b',
+        model         => 's',
+        bgcolor       => 's'
+    },
+    "gnupod-search"
+);
 
-$opts{view} ||= 'ialt'; #Default view
+$opts{view} ||= 'ialt';    #Default view
 
 usage()   if $opts{help};
 version() if $opts{version};
+
 #Check if input makes sense:
-die "You can't use --delete and --rename together\n" if($opts{delete} && $opts{rename});
+die "You can't use --delete and --rename together\n"
+  if ( $opts{delete} && $opts{rename} );
 
 # -> Connect the iPod
-my $connection = GNUpod::FooBar::connect(\%opts);
-usage($connection->{status}."\n") if $connection->{status};
+my $connection = GNUpod::FooBar::connect( \%opts );
+usage( $connection->{status} . "\n" ) if $connection->{status};
 
-my $AWDB  = GNUpod::ArtworkDB->new(Connection=>$connection, DropUnseen=>1);
+my $AWDB = GNUpod::ArtworkDB->new( Connection => $connection, DropUnseen => 1 );
 
 main($connection);
 
 ####################################################
 # Worker
 sub main {
-	my($con) = @_;
-	
-	#Build %rename_tags
-	foreach(@{$opts{rename}}) {
-		my($key,$val) =  split(/=/,$_,2);
-		next unless $key && defined($val);
-		#$key =~ s/^\s*-+//g; # -- is not valid for xml tags!
-		next if lc($key) eq "id";#Dont allow something like THIS
-		$rename_tags{lc($key)} = $val;
-	}
-	
-	if($opts{artwork}) {
-		if( $AWDB->PrepareImage(File=>$opts{artwork}, Model=>$opts{model}, bgcolor=>$opts{bgcolor}) ) {
-			$AWDB->LoadArtworkDb or die "Failed to load artwork database\n";
-		}
-		else {
-			warn "$0: Could not load $opts{artwork}, skipping artwork\n";
-			delete($opts{artwork});
-		}
-	}
-	
-	pview(undef,1);
-	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
-	#XML::Parser finished, write new file if we deleted or renamed
-	if($dirty) {
-		GNUpod::XMLhelper::writexml($con,{automktunes=>$opts{automktunes}});
-	}
-	
-	$AWDB->WriteArtworkDb;
+    my ($con) = @_;
+
+    #Build %rename_tags
+    foreach ( @{ $opts{rename} } ) {
+        my ( $key, $val ) = split( /=/, $_, 2 );
+        next unless $key && defined($val);
+
+        #$key =~ s/^\s*-+//g; # -- is not valid for xml tags!
+        next if lc($key) eq "id";    #Dont allow something like THIS
+        $rename_tags{ lc($key) } = $val;
+    }
+
+    if ( $opts{artwork} ) {
+        if (
+            $AWDB->PrepareImage(
+                File    => $opts{artwork},
+                Model   => $opts{model},
+                bgcolor => $opts{bgcolor}
+            )
+          )
+        {
+            $AWDB->LoadArtworkDb or die "Failed to load artwork database\n";
+        }
+        else {
+            warn "$0: Could not load $opts{artwork}, skipping artwork\n";
+            delete( $opts{artwork} );
+        }
+    }
+
+    pview( undef, 1 );
+    GNUpod::XMLhelper::doxml( $con->{xml} )
+      or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
+
+    #XML::Parser finished, write new file if we deleted or renamed
+    if ($dirty) {
+        GNUpod::XMLhelper::writexml( $con,
+            { automktunes => $opts{automktunes} } );
+    }
+
+    $AWDB->WriteArtworkDb;
 }
 
 #############################################
 # Eventhandler for FILE items
 sub newfile {
-	my($el) =  @_;
-                          # 2 = mount + view (both are ALWAYS set)
-	my $ntm      = keys(%opts)-2-(defined $opts{'match-once'})-(defined $opts{'automktunes'})-(defined $opts{'delete'})-(defined $opts{'rename'})-(defined $opts{'artwork'})-(defined $opts{'model'});
-	my $matched  = 0;
-	my $dounlink = 0;
-	foreach my $opx (keys(%opts)) {
-		next if $opx =~ /mount|match-once|delete|view|rename|artwork|model/; #Skip this
-		
-		
-		if(substr($opts{$opx},0,1) eq '>') {
-			$matched++ if  int($el->{file}->{$opx}) > int(substr($opts{$opx},1));
-		}
-		elsif(substr($opts{$opx},0,1) eq '<') {
-			$matched++ if  int($el->{file}->{$opx}) < int(substr($opts{$opx},1));
-		}
-		elsif(substr($opts{$opx},0,1) eq '-') {
-			my($s_from, $s_to) = substr($opts{$opx},1) =~ /^(\d+)-(\d+)$/;
-			if( (int($el->{file}->{$opx}) >= $s_from) && (int($el->{file}->{$opx}) <= $s_to) ) {
-				$matched++;
-			}
-		}
-		elsif(defined($el->{file}->{$opx}) && $el->{file}->{$opx} =~ /$opts{$opx}/i) {
-			$matched++;
-		}
-	}
+    my ($el) = @_;
 
+    # 2 = mount + view (both are ALWAYS set)
+    my $ntm =
+      keys(%opts) - 2 -
+      ( defined $opts{'match-once'} ) -
+      ( defined $opts{'automktunes'} ) -
+      ( defined $opts{'delete'} ) -
+      ( defined $opts{'rename'} ) -
+      ( defined $opts{'artwork'} ) -
+      ( defined $opts{'model'} );
+    my $matched  = 0;
+    my $dounlink = 0;
+    foreach my $opx ( keys(%opts) ) {
+        next
+          if $opx =~
+          /mount|match-once|delete|view|rename|artwork|model/;    #Skip this
 
-	if(($opts{'match-once'} && $matched) || $ntm == $matched) {
-		# => HIT
-		
-		# -> Rename tags
-		foreach(keys(%rename_tags)) {
-			$el->{file}->{$_} = $rename_tags{$_};
-			$dirty++;
-		}
-		# -> Print output
-		pview($el->{file},undef,$opts{delete});
-		
-		if($opts{delete}) {
-			$dounlink = 1; # Request deletion
-		}
-		elsif(defined($opts{artwork})) {
-			# -> Add/Set artwork
-			$el->{file}->{has_artwork} = 1;
-			$el->{file}->{artworkcnt}  = 1;
-			$el->{file}->{dbid_1}      = $AWDB->InjectImage;
-			$dirty++;
-		}
-	}
-	
-	if($dounlink) {
-		# -> Remove file as requested
-		unlink(GNUpod::XMLhelper::realpath($opts{mount},$el->{file}->{path})) or warn "[!!] Remove failed: $!\n";
-		$dirty++;
-	}
-	else {
-		# -> Keep file: add it to XML
-		GNUpod::XMLhelper::mkfile($el);
-		# -> and keep artwork
-		$AWDB->KeepImage($el->{file}->{dbid_1});
-		# -> and playlists
-		$keeplist[$el->{file}->{id}] = 1;
-	}
+        if ( substr( $opts{$opx}, 0, 1 ) eq '>' ) {
+            $matched++
+              if int( $el->{file}->{$opx} ) > int( substr( $opts{$opx}, 1 ) );
+        }
+        elsif ( substr( $opts{$opx}, 0, 1 ) eq '<' ) {
+            $matched++
+              if int( $el->{file}->{$opx} ) < int( substr( $opts{$opx}, 1 ) );
+        }
+        elsif ( substr( $opts{$opx}, 0, 1 ) eq '-' ) {
+            my ( $s_from, $s_to ) = substr( $opts{$opx}, 1 ) =~ /^(\d+)-(\d+)$/;
+            if (   ( int( $el->{file}->{$opx} ) >= $s_from )
+                && ( int( $el->{file}->{$opx} ) <= $s_to ) )
+            {
+                $matched++;
+            }
+        }
+        elsif ( defined( $el->{file}->{$opx} )
+            && $el->{file}->{$opx} =~ /$opts{$opx}/i )
+        {
+            $matched++;
+        }
+    }
+
+    if ( ( $opts{'match-once'} && $matched ) || $ntm == $matched ) {
+
+        # => HIT
+
+        # -> Rename tags
+        foreach ( keys(%rename_tags) ) {
+            $el->{file}->{$_} = $rename_tags{$_};
+            $dirty++;
+        }
+
+        # -> Print output
+        pview( $el->{file}, undef, $opts{delete} );
+
+        if ( $opts{delete} ) {
+            $dounlink = 1;    # Request deletion
+        }
+        elsif ( defined( $opts{artwork} ) ) {
+
+            # -> Add/Set artwork
+            $el->{file}->{has_artwork} = 1;
+            $el->{file}->{artworkcnt}  = 1;
+            $el->{file}->{dbid_1}      = $AWDB->InjectImage;
+            $dirty++;
+        }
+    }
+
+    if ($dounlink) {
+
+        # -> Remove file as requested
+        unlink(
+            GNUpod::XMLhelper::realpath( $opts{mount}, $el->{file}->{path} ) )
+          or warn "[!!] Remove failed: $!\n";
+        $dirty++;
+    }
+    else {
+        # -> Keep file: add it to XML
+        GNUpod::XMLhelper::mkfile($el);
+
+        # -> and keep artwork
+        $AWDB->KeepImage( $el->{file}->{dbid_1} );
+
+        # -> and playlists
+        $keeplist[ $el->{file}->{id} ] = 1;
+    }
 }
 
 ############################################
 # Eventhandler for PLAYLIST items
 sub newpl {
-	# Delete or rename needs to rebuild the XML file
-	my ($el, $name, $plt) = @_;
-	if(($plt eq "pl" or $plt eq "pcpl") && ref($el->{add}) eq "HASH") { #Add action
-		if(defined($el->{add}->{id}) && int(keys(%{$el->{add}})) == 1) { #Only id
-			return unless($keeplist[$el->{add}->{id}]); #ID not on keeplist. drop it
-		}
-	}
-	elsif($plt eq "spl" && ref($el->{splcont}) eq "HASH") { #spl content
-		if(defined($el->{splcont}->{id}) && int(keys(%{$el->{splcont}})) == 1) { #Only one item
-			return unless($keeplist[$el->{splcont}->{id}]);
-		}
-	}
-	GNUpod::XMLhelper::mkfile($el,{$plt."name"=>$name});
-}
 
+    # Delete or rename needs to rebuild the XML file
+    my ( $el, $name, $plt ) = @_;
+    if ( ( $plt eq "pl" or $plt eq "pcpl" ) && ref( $el->{add} ) eq "HASH" )
+    {    #Add action
+        if ( defined( $el->{add}->{id} )
+            && int( keys( %{ $el->{add} } ) ) == 1 )
+        {    #Only id
+            return
+              unless ( $keeplist[ $el->{add}->{id} ] )
+              ;    #ID not on keeplist. drop it
+        }
+    }
+    elsif ( $plt eq "spl" && ref( $el->{splcont} ) eq "HASH" ) {    #spl content
+        if ( defined( $el->{splcont}->{id} )
+            && int( keys( %{ $el->{splcont} } ) ) == 1 )
+        {    #Only one item
+            return unless ( $keeplist[ $el->{splcont}->{id} ] );
+        }
+    }
+    GNUpod::XMLhelper::mkfile( $el, { $plt . "name" => $name } );
+}
 
 ##############################################################
 # Printout Search output
 sub pview {
- my($orf,$xhead, $xdelete) = @_;
- 
- #Build refs
- my %qh = ();
- $qh{n}{k} = $orf->{songnum};   $qh{n}{w} = 4;  $qh{n}{s} = "SNUM";
- $qh{t}{k} = $orf->{title};                     $qh{t}{s} = "TITLE";
- $qh{a}{k} = $orf->{artist};                    $qh{a}{s} = "ARTIST";
- $qh{r}{k} = $orf->{rating};    $qh{r}{w} = 4;  $qh{r}{s} = "RTNG";
- $qh{p}{k} = $orf->{path};      $qh{p}{w} = 96; $qh{p}{s} = "PATH";
- $qh{l}{k} = $orf->{album};                     $qh{l}{s} = "ALBUM";
- $qh{g}{k} = $orf->{genre};                     $qh{g}{s} = "GENRE";
- $qh{R}{k} = $orf->{podcastrss};                $qh{R}{s} = "RSS";
- $qh{G}{k} = $orf->{podcastguid};               $qh{G}{s} = "GUID";
- $qh{c}{k} = $orf->{playcount}; $qh{c}{w} = 4;  $qh{c}{s} = "CNT";
- $qh{i}{k} = $orf->{id};        $qh{i}{w} = 4;  $qh{i}{s} = "ID";
- $qh{d}{k} = $orf->{dbid_1};    $qh{d}{w} = 16; $qh{d}{s} = "DBID";
- $qh{b}{k} = $orf->{bitrate};   $qh{b}{w} = 8;  $qh{b}{s} = "BITRATE";
- $qh{u}{k} = GNUpod::XMLhelper::realpath($opts{mount},$orf->{path}); $qh{u}{w} = 96; $qh{u}{s} = "UNIXPATH";
- 
- #Prepare view
- 
- my $ll = 0; #LineLength
-  foreach(split(//,$opts{view})) {
-      print "|" if $ll;
-      my $cs = defined($qh{$_}{k}) ? $qh{$_}{k} : '' ;  #CurrentString
-         $cs = $qh{$_}{s} if $xhead; #Replace it if HEAD is needed
- 
-      my $cl = $qh{$_}{w}||DEFAULT_SPACE;       #Current length
-         $ll += $cl+1;               #Incrase LineLength
-     printf("%-*s",$cl,$cs);
-  }
-  
-  if($xdelete && !$xhead) {
-   print " [RM]\n";
-  }
-  elsif($xhead) {
-   print "\n";
-   print "=" x $ll;
-   print "\n";
-  }
-  else {
-   print "\n";
-  }
+    my ( $orf, $xhead, $xdelete ) = @_;
+
+    #Build refs
+    my %qh = ();
+    $qh{n}{k} = $orf->{songnum};
+    $qh{n}{w} = 4;
+    $qh{n}{s} = "SNUM";
+    $qh{t}{k} = $orf->{title};
+    $qh{t}{s} = "TITLE";
+    $qh{a}{k} = $orf->{artist};
+    $qh{a}{s} = "ARTIST";
+    $qh{r}{k} = $orf->{rating};
+    $qh{r}{w} = 4;
+    $qh{r}{s} = "RTNG";
+    $qh{p}{k} = $orf->{path};
+    $qh{p}{w} = 96;
+    $qh{p}{s} = "PATH";
+    $qh{l}{k} = $orf->{album};
+    $qh{l}{s} = "ALBUM";
+    $qh{g}{k} = $orf->{genre};
+    $qh{g}{s} = "GENRE";
+    $qh{R}{k} = $orf->{podcastrss};
+    $qh{R}{s} = "RSS";
+    $qh{G}{k} = $orf->{podcastguid};
+    $qh{G}{s} = "GUID";
+    $qh{c}{k} = $orf->{playcount};
+    $qh{c}{w} = 4;
+    $qh{c}{s} = "CNT";
+    $qh{i}{k} = $orf->{id};
+    $qh{i}{w} = 4;
+    $qh{i}{s} = "ID";
+    $qh{d}{k} = $orf->{dbid_1};
+    $qh{d}{w} = 16;
+    $qh{d}{s} = "DBID";
+    $qh{b}{k} = $orf->{bitrate};
+    $qh{b}{w} = 8;
+    $qh{b}{s} = "BITRATE";
+    $qh{u}{k} = GNUpod::XMLhelper::realpath( $opts{mount}, $orf->{path} );
+    $qh{u}{w} = 96;
+    $qh{u}{s} = "UNIXPATH";
+
+    #Prepare view
+
+    my $ll = 0;    #LineLength
+    foreach ( split( //, $opts{view} ) ) {
+        print "|" if $ll;
+        my $cs = defined( $qh{$_}{k} ) ? $qh{$_}{k} : '';    #CurrentString
+        $cs = $qh{$_}{s} if $xhead;    #Replace it if HEAD is needed
+
+        my $cl = $qh{$_}{w} || DEFAULT_SPACE;    #Current length
+        $ll += $cl + 1;                          #Incrase LineLength
+        printf( "%-*s", $cl, $cs );
+    }
+
+    if ( $xdelete && !$xhead ) {
+        print " [RM]\n";
+    }
+    elsif ($xhead) {
+        print "\n";
+        print "=" x $ll;
+        print "\n";
+    }
+    else {
+        print "\n";
+    }
 
 }
-
 
 ###############################################################
 # Basic help
 sub usage {
-my($rtxt) = @_;
-die << "EOF";
+    my ($rtxt) = @_;
+    die <<"EOF";
 $rtxt
 Usage: gnupod-search.pl [-h] [-m directory] File1 File2 ...
 
@@ -277,9 +351,8 @@ Report bugs to <bug-gnupod\@nongnu.org>
 EOF
 }
 
-
 sub version {
-die << "EOF";
+    die <<"EOF";
 gnupod-search.pl (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2008
 
@@ -288,7 +361,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 EOF
 }
-
 
 =head1 NAME
 

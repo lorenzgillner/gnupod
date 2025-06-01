@@ -26,97 +26,113 @@ use warnings;
 use GNUpod::FooBar;
 use GNUpod::FileMagic;
 
-my $file  = $ARGV[0] or exit(1);
-my $gimme = $ARGV[1];
+my $file    = $ARGV[0] or exit(1);
+my $gimme   = $ARGV[1];
 my $quality = $ARGV[2];
 
-
-if(!(-r $file)) {
- warn "$file is not readable!\n";
- exit(1);
+if ( !( -r $file ) ) {
+    warn "$file is not readable!\n";
+    exit(1);
 }
-elsif($gimme eq "GET_META") {
- my $ftag = undef;
- ## This is a UGLY trick to cheat perl!
- ## 1. Create a string
- 
- my $ogg_pmod = undef;
- 
- foreach my $ogg_pmod ('Ogg::Vorbis::Header::PurePerl','Ogg::Vorbis::Header') {
-  my $nocompile = "use $ogg_pmod; \$ftag = $ogg_pmod->new(\$file);";
-  eval $nocompile; #2. eval it!
-  last unless $@;
- }
- ## 3. = no errors
- if($@) {
-   warn "gnupod-convert-OGG.pl: Could not read OGG-Metadata from $file (".ref($ftag).")\n";
-   warn "gnupod-convert-OGG.pl: Maybe $ogg_pmod is not installed?\n";
-   warn "Error: *$@*\n";
-   exit(1);
- }
- 
- 
-print "_ARTIST:".($ftag->comment('artist'))[0]."\n";
-print "_ALBUM:".($ftag->comment('album'))[0]."\n";
-print "_TITLE:".($ftag->comment('title'))[0]."\n";
-print "_GENRE:".($ftag->comment('genre'))[0]."\n";
-print "_TRACKNUM:".( ($ftag->comment('tracknum'))[0] |
-                     ($ftag->comment('tracknumber'))[0] )."\n";
-print "_COMMENT:".($ftag->comment('comment'))[0]."\n";
-print "_REPLAYGAIN_TRACK_GAIN:".($ftag->comment('REPLAYGAIN_TRACK_GAIN'))[0]."\n";
-print "_REPLAYGAIN_ALBUM_GAIN:".($ftag->comment('REPLAYGAIN_ABLUM_GAIN'))[0]."\n";
-print "_MEDIATYPE:".(GNUpod::FileMagic::MEDIATYPE_AUDIO)."\n";
-print "FORMAT:OGG\n";
-}
-elsif($gimme eq "GET_PCM") {
-  my $tmpout = GNUpod::FooBar::get_u_path("/tmp/gnupod_pcm", "wav");
+elsif ( $gimme eq "GET_META" ) {
+    my $ftag = undef;
+    ## This is a UGLY trick to cheat perl!
+    ## 1. Create a string
 
-  my $status = system("oggdec", "--quiet", "-o", $tmpout, $file);
-  
-  if($status) {
-   warn "oggdec exited with $status, $!\n";
-   exit(1);
-  }
-  
-  print "PATH:$tmpout\n";
-  
-}
-elsif($gimme eq "GET_MP3") {
-  #Open a secure flac pipe and open anotherone for lame
-  #On errors, we'll get a BrokenPipe to stout
-  my $tmpout = GNUpod::FooBar::get_u_path("/tmp/gnupod_mp3", "mp3");
-  open(OGGOUT, "-|") or exec("oggdec", "--quiet", "-o", "-", $file) or die "Could not exec oggdec: $!\n";
-  open(LAMEIN , "|-") or exec("lame", "-V", $quality, "--silent", "-", $tmpout) or die "Could not exec lame: $!\n";
-  binmode(OGGOUT);
-  binmode(LAMEIN);
-   while(<OGGOUT>) {
-    print LAMEIN $_;
-   }
-  close(OGGOUT);
-  close(LAMEIN);
-  print "PATH:$tmpout\n";
-}
-elsif($gimme eq "GET_AAC" or $gimme eq "GET_AACBM") {
- #Yeah! FAAC is broken and can't write to stdout..
-  my $tmpout = GNUpod::FooBar::get_u_path("/tmp/gnupod_faac", "m4a");
-     $tmpout = GNUpod::FooBar::get_u_path("/tmp/gnupod_faac", "m4b") if $gimme eq "GET_AACBM";
-  $quality = 140 - ($quality*10);
-  open(OGGOUT, "-|") or exec("oggdec", "--quiet", "-o", "-", $file) or die "Could not exec oggdec: $!\n";
-  open(FAACIN , "|-") or exec("faac", "-w", "-q", $quality, "-o", $tmpout, "-") or die "Could not exec faac: $!\n";
-  binmode(OGGOUT);
-  binmode(FAACIN);
-   while(<OGGOUT>) { #Feed faac
-    print FAACIN $_;
-   }
+    my $ogg_pmod = undef;
 
-  close(OGGOUT);
-  close(FAACIN);
+    foreach
+      my $ogg_pmod ( 'Ogg::Vorbis::Header::PurePerl', 'Ogg::Vorbis::Header' )
+    {
+        my $nocompile = "use $ogg_pmod; \$ftag = $ogg_pmod->new(\$file);";
+        eval $nocompile;    #2. eval it!
+        last unless $@;
+    }
+    ## 3. = no errors
+    if ($@) {
+        warn "gnupod-convert-OGG.pl: Could not read OGG-Metadata from $file ("
+          . ref($ftag) . ")\n";
+        warn "gnupod-convert-OGG.pl: Maybe $ogg_pmod is not installed?\n";
+        warn "Error: *$@*\n";
+        exit(1);
+    }
 
-  print "PATH:$tmpout\n";
+    print "_ARTIST:" . ( $ftag->comment('artist') )[0] . "\n";
+    print "_ALBUM:" .  ( $ftag->comment('album') )[0] . "\n";
+    print "_TITLE:" .  ( $ftag->comment('title') )[0] . "\n";
+    print "_GENRE:" .  ( $ftag->comment('genre') )[0] . "\n";
+    print "_TRACKNUM:"
+      . ( ( $ftag->comment('tracknum') )[0] |
+          ( $ftag->comment('tracknumber') )[0] ) . "\n";
+    print "_COMMENT:" . ( $ftag->comment('comment') )[0] . "\n";
+    print "_REPLAYGAIN_TRACK_GAIN:"
+      . ( $ftag->comment('REPLAYGAIN_TRACK_GAIN') )[0] . "\n";
+    print "_REPLAYGAIN_ALBUM_GAIN:"
+      . ( $ftag->comment('REPLAYGAIN_ABLUM_GAIN') )[0] . "\n";
+    print "_MEDIATYPE:" . (GNUpod::FileMagic::MEDIATYPE_AUDIO) . "\n";
+    print "FORMAT:OGG\n";
+}
+elsif ( $gimme eq "GET_PCM" ) {
+    my $tmpout = GNUpod::FooBar::get_u_path( "/tmp/gnupod_pcm", "wav" );
+
+    my $status = system( "oggdec", "--quiet", "-o", $tmpout, $file );
+
+    if ($status) {
+        warn "oggdec exited with $status, $!\n";
+        exit(1);
+    }
+
+    print "PATH:$tmpout\n";
+
+}
+elsif ( $gimme eq "GET_MP3" ) {
+
+    #Open a secure flac pipe and open anotherone for lame
+    #On errors, we'll get a BrokenPipe to stout
+    my $tmpout = GNUpod::FooBar::get_u_path( "/tmp/gnupod_mp3", "mp3" );
+    open( OGGOUT, "-|" )
+      or exec( "oggdec", "--quiet", "-o", "-", $file )
+      or die "Could not exec oggdec: $!\n";
+    open( LAMEIN, "|-" )
+      or exec( "lame", "-V", $quality, "--silent", "-", $tmpout )
+      or die "Could not exec lame: $!\n";
+    binmode(OGGOUT);
+    binmode(LAMEIN);
+    while (<OGGOUT>) {
+        print LAMEIN $_;
+    }
+    close(OGGOUT);
+    close(LAMEIN);
+    print "PATH:$tmpout\n";
+}
+elsif ( $gimme eq "GET_AAC" or $gimme eq "GET_AACBM" ) {
+
+    #Yeah! FAAC is broken and can't write to stdout..
+    my $tmpout = GNUpod::FooBar::get_u_path( "/tmp/gnupod_faac", "m4a" );
+    $tmpout = GNUpod::FooBar::get_u_path( "/tmp/gnupod_faac", "m4b" )
+      if $gimme eq "GET_AACBM";
+    $quality = 140 - ( $quality * 10 );
+    open( OGGOUT, "-|" )
+      or exec( "oggdec", "--quiet", "-o", "-", $file )
+      or die "Could not exec oggdec: $!\n";
+    open( FAACIN, "|-" )
+      or exec( "faac", "-w", "-q", $quality, "-o", $tmpout, "-" )
+      or die "Could not exec faac: $!\n";
+    binmode(OGGOUT);
+    binmode(FAACIN);
+
+    while (<OGGOUT>) {    #Feed faac
+        print FAACIN $_;
+    }
+
+    close(OGGOUT);
+    close(FAACIN);
+
+    print "PATH:$tmpout\n";
 }
 else {
- warn "$0 can't encode into $gimme\n";
- exit(1);
+    warn "$0 can't encode into $gimme\n";
+    exit(1);
 }
 
 exit(0);

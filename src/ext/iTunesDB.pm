@@ -54,7 +54,7 @@ my %mhod_id = (  title=>1, path=>2, album=>3, artist=>4, genre=>5, fdesc=>6, eq=
 
 
 
-############ PLAYLIST IPOD-SORT DEFINITION ################
+############ PLAYLIST IPOD-SORT DEFinitION ################
 $PLDEF{sort}{1}  = 'manual';
 $PLDEF{sort}{2}  = 'path';
 $PLDEF{sort}{3}  = 'title';
