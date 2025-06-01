@@ -1,6 +1,6 @@
 ###__PERLBIN__###
 #  Copyright (C) 2009 Heinrich Langos <henrik-gnupod at prak.org>
-#  based on gnupod_search by Adrian Ulrich <pab at blinkenlights.ch>
+#  based on gnupod-search by Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
 #  URL: http://www.gnu.org/software/gnupod/
@@ -30,7 +30,7 @@ use GNUpod::FindHelper;
 #use GNUpod::ArtworkDB;
 use Getopt::Long;
 
-my $programName = "gnupod_find.pl";
+my $programName = "gnupod-find.pl";
 
 my $fullversionstring = "$programName Version ###__VERSION__### (C) Heinrich Langos";
 
@@ -44,8 +44,8 @@ my $getoptres = GetOptions(\%opts, "version", "help|h", "mount|m=s",
 
 );
 
-# take model and mountpoint from gnupod_search preferences
-GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s'}, "gnupod_search");
+# take model and mountpoint from gnupod-search preferences
+GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s'}, "gnupod-search");
 
 
 usage()   if ($opts{help} || !$getoptres );
@@ -88,7 +88,7 @@ sub main {
 
 	my($con) = @_;
 
-	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod_INIT.pl?\n");
+	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
 	#print "resultlist:\n".Dumper(\@resultlist);
 
@@ -146,20 +146,20 @@ EOF
 
 =head1 NAME
 
-gnupod_find.pl  - Find songs on your iPod
+gnupod-find.pl  - Find songs on your iPod
 
 =head1 SYNOPSIS
 
-gnupod_find.pl [OPTION]
+gnupod-find.pl [OPTION]
 
 =head1 DESCRIPTION
 
-C<gnupod_find.pl> searches the F<GNUtunesDB.xml> file for matches to its
+C<gnupod-find.pl> searches the F<GNUtunesDB.xml> file for matches to its
 arguments and shows those files.
 
 =head1 OPTIONS
 
-###___PODINSERT man/gnupod_find-options.pod___###
+###___PODINSERT man/gnupod-find-options.pod___###
 
 ###___PODINSERT man/general-tools.pod___###
 

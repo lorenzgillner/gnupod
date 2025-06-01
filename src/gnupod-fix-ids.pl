@@ -7,7 +7,7 @@ use warnings;
 use GNUpod::XMLhelper;
 use Getopt::Long;
 
-my $programName = "gnupod_fix_ids.pl";
+my $programName = "gnupod-fix-ids.pl";
 
 my $fullversionstring = "$programName Version ###__VERSION__###";
 
@@ -18,8 +18,8 @@ $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 my $getoptres = GetOptions(\%opts, "version", "help|h", "mount|m=s",
 );
 
-# take model and mountpoint from gnupod_search preferences
-GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s'}, "gnupod_fix_ids");
+# take model and mountpoint from gnupod-search preferences
+GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s'}, "gnupod-fix-ids");
 
 usage()   if ($opts{help} || !$getoptres );
 version() if $opts{version};
@@ -38,7 +38,7 @@ sub main {
 
 	# pass one, just to get id map
 	GNUpod::XMLhelper::doxml($con->{xml}) or 
-		usage("Failed to parse $con->{xml}, did you run gnupod_INIT.pl?\n");
+		usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
 	# pass two: fix up ids, and insert into new XML
 	$pass++;

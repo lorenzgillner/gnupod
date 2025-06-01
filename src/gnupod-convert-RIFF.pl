@@ -69,17 +69,17 @@ exit(0);
 
 =head1 NAME
 
-gnupod_convert_RIFF.pl - Convert a file to an iPod supported format.
+gnupod-convert-RIFF.pl - Convert a file to an iPod supported format.
 
 =head1 SYNOPSIS
 
-B<gnupod_convert_RIFF.pl> SOURCEFILE FORMATSELECTOR QUALITY
+B<gnupod-convert-RIFF.pl> SOURCEFILE FORMATSELECTOR QUALITY
 
 =head1 DESCRIPTION
 
-gnupod_convert_RIFF.pl converts a media file to one of the formats
+gnupod-convert-RIFF.pl converts a media file to one of the formats
 that are supported by the iPod. This tool is not supposed to be called
-by the user directly but rather by gnupod_addsong.pl. Therefore this
+by the user directly but rather by gnupod-addsong.pl. Therefore this
 documentation is rudimentary and will remain so.
 
 =head1 OPTIONS
@@ -112,7 +112,7 @@ C<< <http://lists.gnu.org/archive/html/bug-gnupod/> >>.
 
 =item *
 
-L<gnupod_addsong.pl> - Add songs, podcasts and books to your iPod.
+L<gnupod-addsong.pl> - Add songs, podcasts and books to your iPod.
 
 =back
 

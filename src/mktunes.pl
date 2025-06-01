@@ -67,7 +67,7 @@ sub main {
 	$mktunes = GNUpod::Mktunes->new(Connection=>$con, iPodName=>$opts{'ipod-name'}, Artwork=>$AWDB);
 	
 	print "> Parsing XML document...\n";
-	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Could not read $con->{xml}, did you run gnupod_INIT.pl ?");
+	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Could not read $con->{xml}, did you run gnupod-init ?");
 	
 	print "\r> ".$mktunes->GetFileCount." files parsed, assembling iTunesDB...\n";
 

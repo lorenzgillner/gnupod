@@ -58,14 +58,14 @@ A quick Howto for a fresh (virgin) iPod
    ./configure && make install
  
  1 Mount the iPod (eg. /mnt/ipod)
- 2 run gnupod_INIT.pl -m /mnt/ipod
- 3 add songs using 'gnupod_addsong.pl -m /mnt/ipod *blabla.mp3
+ 2 run gnupod-init -m /mnt/ipod
+ 3 add songs using 'gnupod-addsong.pl -m /mnt/ipod *blabla.mp3
  4 build the iTunesDB using mktunes: 'mktunes.pl -m /mnt/ipod'
  5 umount the iPod and enjoy!
 
  If you add more songs, repeat step 1-5 (without step 2!) :
  1 Mount the iPod
- 2 use gnupod_addsong.pl
+ 2 use gnupod-addsong.pl
  3 build the database with mktunes.pl
  4 umount
 
@@ -117,7 +117,7 @@ The iPod supports 3 Filetypes:
  - Apple AAC/ALAC files (.m4a)
  - PCM (.wav)
 
-gnupod_addsong.pl can read this 3 formats.
+gnupod-addsong.pl can read this 3 formats.
 
 GNUpod does (currently) *NOT* support:
 
@@ -125,8 +125,8 @@ GNUpod does (currently) *NOT* support:
  - Apple MusicStore files (.m4p - DRM AAC) but it does support .m4a
 
 GnuPod >= 0.96 can convert FLAC and OGG files 'on the fly'.
-You'll have to call gnupod_addsong.pl with the
---decode switch. see 'man gnupod_addsong.pl' for more details
+You'll have to call gnupod-addsong.pl with the
+--decode switch. see 'man gnupod-addsong.pl' for more details
 (Or read the complete docs: 'info gnupod')
 
 DRM-Support isn't planned.
@@ -137,9 +137,9 @@ But gnupod works pretty well with M4A files from allofmp3.com
 7. How can i add files recursive?
 ---------------------------------
 
-gnupod_addsong.pl can read from stdin :)
+gnupod-addsong.pl can read from stdin :)
 
-$ find blabla/ | gnupod_addsong.pl -
+$ find blabla/ | gnupod-addsong.pl -
 
 (note the '-')
 
@@ -147,7 +147,7 @@ $ find blabla/ | gnupod_addsong.pl -
 8. How to get parseable output from gnupod_search.pl
 ----------------------------------------------------
 
-gnupod_addsong.pl knows the '--view' switch.
+gnupod-addsong.pl knows the '--view' switch.
 
 Example: 
 gnupod_search.pl --view=i -l "Cure" 2>/dev/null | tail +4

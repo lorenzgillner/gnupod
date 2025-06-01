@@ -4,8 +4,8 @@ Nothing interesting for users.
 These aren't the droids you're looking for. Move along! :-)
 
 Minimal testing:
-> gnupod_INIT.pl /mnt/empty
-> gnupod_addsong
+> gnupod-init /mnt/empty
+> gnupod-addsong
 > mktunes.pl
 > tunes2pod.pl --force
 > mktunes.pl

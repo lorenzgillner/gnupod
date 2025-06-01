@@ -64,7 +64,7 @@ sub go {
 	usage($con->{status}."\n") if $con->{status};
 	
 	if(GNUpod::FooBar::ItunesDBNeedsSync($con)) {
-		die "gnupod_otgsync.pl: Bug detected! You need to run tunes2pod.pl -> Sync broken!\n";
+		die "gnupod-otgsync.pl: Bug detected! You need to run tunes2pod.pl -> Sync broken!\n";
 	}
 	
 	##Check if GNUtunesDB <-> iTunesDB is really in-sync
@@ -172,11 +172,11 @@ sub usage {
 
 =head1 NAME
 
-gnupod_otgsync.pl - Helper script for On-The-Go data
+gnupod-otgsync.pl - Helper script for On-The-Go data
 
 =head1 SYNOPSIS
 
-B<gnupod_otgsync.pl>
+B<gnupod-otgsync.pl>
 
 =head1 DESCRIPTION
 

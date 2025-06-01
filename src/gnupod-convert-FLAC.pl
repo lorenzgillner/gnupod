@@ -47,8 +47,8 @@ elsif($gimme eq "GET_META") {
 	}
 	## 3. = no errors without Audio::FLAC! :)
 	if($@ || ref($ftag) ne "HASH") {
-		warn "gnupod_convert_FLAC.pl: Could not read FLAC-Metadata from $file\n";
-		warn "gnupod_convert_FLAC.pl: Maybe Audio::FLAC is not installed?\n";
+		warn "gnupod-convert-FLAC.pl: Could not read FLAC-Metadata from $file\n";
+		warn "gnupod-convert-FLAC.pl: Maybe Audio::FLAC is not installed?\n";
 		warn "Error: $@\n";
 		exit(1);
 	}
@@ -132,17 +132,17 @@ exit(0);
 
 =head1 NAME
 
-gnupod_convert_FLAC.pl - Convert a file to an iPod supported format.
+gnupod-convert-FLAC.pl - Convert a file to an iPod supported format.
 
 =head1 SYNOPSIS
 
-B<gnupod_convert_FLAC.pl> SOURCEFILE FORMATSELECTOR QUALITY
+B<gnupod-convert-FLAC.pl> SOURCEFILE FORMATSELECTOR QUALITY
 
 =head1 DESCRIPTION
 
-gnupod_convert_FLAC.pl converts a media file to one of the formats
+gnupod-convert-FLAC.pl converts a media file to one of the formats
 that are supported by the iPod. This tool is not supposed to be called
-by the user directly but rather by gnupod_addsong.pl. Therefore this
+by the user directly but rather by gnupod-addsong.pl. Therefore this
 documentation is rudimentary and will remain so.
 
 =head1 OPTIONS
@@ -175,7 +175,7 @@ C<< <http://lists.gnu.org/archive/html/bug-gnupod/> >>.
 
 =item *
 
-L<gnupod_addsong.pl> - Add songs, podcasts and books to your iPod.
+L<gnupod-addsong.pl> - Add songs, podcasts and books to your iPod.
 
 =back
 

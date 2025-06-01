@@ -23,19 +23,21 @@
 
 use strict;
 use warnings;
+
 use GNUpod::FooBar;
 use GNUpod::XMLhelper;
 use Getopt::Long;
 use vars qw(%opts);
 
 
-print "gnupod_INIT.pl ###__VERSION__### (C) Adrian Ulrich\n";
+print "gnupod-init ###__VERSION__### (C) Adrian Ulrich\n";
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
+
 #Don't add xml and itunes opts.. we *NEED* the mount opt to be set..
 GetOptions(\%opts, "version", "help|h", "mount|m=s", "disable-convert|d", "france|f", "noask", "model=s", "fwguid|g=s");
-GNUpod::FooBar::GetConfig(\%opts, {model=>'s'}, "gnupod_INIT");
-#gnupod_INIT does not read configuration files!
+GNUpod::FooBar::GetConfig(\%opts, {model=>'s'}, "gnupod-init");
+#gnupod-init does not read configuration files!
 
 
 usage() if $opts{help};
@@ -63,9 +65,9 @@ You only have to use this command if
     -> You never used GNUpod with this iPod
  or -> You did an 'rm -rf' on your iPod
 
-btw: use 'gnupod_addsong -m $opts{mount} --restore'
+btw: use 'gnupod-addsong -m $opts{mount} --restore'
      if you lost your songs on the iPod after using
-     gnupod_INIT.pl (..but this won't happen, because
+     gnupod-init (..but this won't happen, because
      this tool has no bugs ;) )
 *********************************************************
 
@@ -145,7 +147,7 @@ sub usage {
 my($rtxt) = @_;
 die << "EOF";
 $rtxt
-Usage: gnupod_INIT.pl [-h] [-m directory]
+Usage: gnupod-init [-h] [-m directory]
 
    -h, --help              display this help and exit
        --version           output version information and exit
@@ -166,7 +168,7 @@ EOF
 
 sub version {
 die << "EOF";
-gnupod_INIT.pl (gnupod) ###__VERSION__###
+gnupod-init (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2004
 
 This is free software; see the source for copying conditions.  There is NO
@@ -177,15 +179,15 @@ EOF
 
 =head1 NAME
 
-gnupod_INIT.pl - Initialize iPod for the usage with gnupod.
+gnupod-init - Initialize iPod for the usage with gnupod.
 
 =head1 SYNOPSIS
 
-B<gnupod_INIT.pl> [OPTION]...
+B<gnupod-init> [OPTION]...
 
 =head1 DESCRIPTION
 
-gnupod_INIT.pl prepares a 'virgin' iPod for GNUpod by creating missing
+gnupod-init prepares a 'virgin' iPod for GNUpod by creating missing
 directories that your iPod needs, translating an existing
 iTunesDB (via L<tunes2pod.pl>) to a L<GNUtunes.xml> and/or creating
 a missing iTunesDB (via L<mktunes.pl>).

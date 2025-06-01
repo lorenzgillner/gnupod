@@ -596,15 +596,15 @@ Mount the iPod (I assume you mount it at /mnt/ipod) as described in 'Using FireW
 </P><P>
 
 If the iPod is freshly formatted or you never used GNUpod before with this iPod, run
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_INIT.pl -m /mnt/ipod
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-init -m /mnt/ipod
 </pre></td></tr></table></P><P>
 
-gnupod_INIT.pl will create the default directory tree and creates an empty GNUtunesDB 
+gnupod-init will create the default directory tree and creates an empty GNUtunesDB 
 (or if it finds an iTunesDB, it runs tunes2pod.pl to convert the iTunesDB to an GNUtunesDB)
 </P><P>
 
 Use
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_INIT.pl -m /mnt/ipod --france
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-init -m /mnt/ipod --france
 </pre></td></tr></table></P><P>
 
 if you would like to enable the 'EU-Volume-Limit' (=decrease max. volume).
@@ -661,26 +661,26 @@ Edit this file and save it as ~/.gnupodrc or on your iPod (iPod_Control/.gnupod/
 <!--docid::SEC11::-->
 <P>
 
-To add files, we use the script called <CODE>gnupod_addsong.pl</CODE>.
+To add files, we use the script called <CODE>gnupod-addsong.pl</CODE>.
 </P><P>
 
 First, mount the iPod (eg. at /mnt/ipod) if it isn't mounted.
 </P><P>
 
-If you would like to add the file /tmp/foo.mp3, run gnupod_addsong.pl like this:
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_addsong.pl -m /mnt/ipod /tmp/foo.mp3
+If you would like to add the file /tmp/foo.mp3, run gnupod-addsong.pl like this:
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-addsong.pl -m /mnt/ipod /tmp/foo.mp3
 </pre></td></tr></table></P><P>
 
 You can also use wildcards:
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_addsong.pl -m /mnt/ipod /mnt/mp3/seiken_densetsu2_ost/* /mnt/mp3/xenogears/ost?/*
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-addsong.pl -m /mnt/ipod /mnt/mp3/seiken_densetsu2_ost/* /mnt/mp3/xenogears/ost?/*
 </pre></td></tr></table></P><P>
 
-It isn't possible to add the same MP3 multiple times, gnupod_addsong.pl detects duplicates 
+It isn't possible to add the same MP3 multiple times, gnupod-addsong.pl detects duplicates 
 (Duplicate = same filesize/time and ID3Tag name). You can disable the duplicate-detection 
 with the '--duplicate' switch.
 </P><P>
 
-gnupod_addsong.pl understands MP3/WAV (RIFF) and M4A (Apple AAC - NO DRM!) files.
+gnupod-addsong.pl understands MP3/WAV (RIFF) and M4A (Apple AAC - NO DRM!) files.
 </P><P>
 
 It can also convert FLAC and OGG files on-the-fly:
@@ -689,14 +689,14 @@ It can also convert FLAC and OGG files on-the-fly:
 Using this example, it would convert the two files into MP3 and add them to the iPod.
 </P><P>
 
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_addsong.pl -m /mnt/ipod myfile.flac myfile.ogg --decode=mp3
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-addsong.pl -m /mnt/ipod myfile.flac myfile.ogg --decode=mp3
 </pre></td></tr></table></P><P>
 
 (Note: To use all features of --decode, you will have to install
  Audio::FLAC::Header, Ogg::Vorbis::Header::PurePerl, lame, flac, oggenc and faac)
 </P><P>
 
-gnupod_addsong.pl tries to 'auto-detect' the encoding of the ID3 Tag. 
+gnupod-addsong.pl tries to 'auto-detect' the encoding of the ID3 Tag. 
 Sometimes this works (in most cases ;) ) sometimes it doesn't. If it doesn't work for you, 
 feel free to send me an example-file: pab@blinkenligts.ch
 </P><P>
@@ -722,15 +722,15 @@ DO NOT umount the iPod yet! First read the section 'Unplug the iPod'!
 <!--docid::SEC12::-->
 <P>
 
-GNUpod includes a tool called <CODE>gnupod_search.pl</CODE> that helps you search for files.
+GNUpod includes a tool called <CODE>gnupod-search.pl</CODE> that helps you search for files.
 </P><P>
 
 Maybe you would like to search for the artist called 'Schlummiguch'. In this case, run
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_search.pl -m /mnt/ipod -a "Schlummiguch"
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-search.pl -m /mnt/ipod -a "Schlummiguch"
 </pre></td></tr></table></P><P>
 
-Note: gnupod_search.pl assumes RegExp input.
-Please have a look at <CODE>gnupod_search.pl --help</CODE> for more information.
+Note: gnupod-search.pl assumes RegExp input.
+Please have a look at <CODE>gnupod-search.pl --help</CODE> for more information.
 </P><P>
 
 <A NAME="Remove files"></A>
@@ -751,9 +751,9 @@ Please have a look at <CODE>gnupod_search.pl --help</CODE> for more information.
 <!--docid::SEC13::-->
 <P>
 
-Removing files is done using <CODE>gnupod_search.pl -d</CODE>.
+Removing files is done using <CODE>gnupod-search.pl -d</CODE>.
 To Remove all files from the artist 'Schlummiguch', run
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_search.pl -m /mnt/ipod -a "Schlummiguch" -d
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-search.pl -m /mnt/ipod -a "Schlummiguch" -d
 </pre></td></tr></table></P><P>
 
 <A NAME="Edit tags"></A>
@@ -774,10 +774,10 @@ To Remove all files from the artist 'Schlummiguch', run
 <!--docid::SEC14::-->
 <P>
 
-You can use <CODE>gnupod_search.pl</CODE> to edit tags (like artist, album, etc..)
+You can use <CODE>gnupod-search.pl</CODE> to edit tags (like artist, album, etc..)
 </P><P>
 
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_search.pl --artist="Alfred Neumann" --rename="artist=John Doe" --rename="rating=100"
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-search.pl --artist="Alfred Neumann" --rename="artist=John Doe" --rename="rating=100"
 </pre></td></tr></table></P><P>
 
 This example searches all files from 'Alfred Neumann', changes the artist into 'John Doe' and
@@ -878,7 +878,7 @@ For more examples have a look at <CODE>doc/gnutunesdb.example</CODE> included in
 Also check out http://blinkenlights.ch/gnupod/mkspl.html for a 'JavaScript SPL-Creator'
 </P><P>
 
-You can also use the --playlist option of gnupod_addsong.pl. This will create and add the listed songs to the 
+You can also use the --playlist option of gnupod-addsong.pl. This will create and add the listed songs to the 
 named playlist.
 </P><P>
 
@@ -914,14 +914,14 @@ To create a podcast playlist you just need to set the podcast flag to '1':
 Such a playlist will show up as a Podcast after running mktunes.pl
 </P><P>
 
-gnupod_addsong.pl can also download podcasts and create such playlists itself:
+gnupod-addsong.pl can also download podcasts and create such playlists itself:
 </P><P>
 
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_addsong.pl -p "Heute Morgen" --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-addsong.pl -p "Heute Morgen" --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
 </pre></td></tr></table></P><P>
 
 Running this command will create a Playlist called 'Heute Morgen' (<CODE>-p</CODE>) and set <CODE>podcast="1"</CODE> (<CODE>--playlist-is-podcast</CODE>).
-<CODE>gnupod_addsong.pl</CODE> will then fetch the podcast from <CODE>http://pod.drs.ch/heutemorgen_mpx.xml</CODE>, download all (new) files 
+<CODE>gnupod-addsong.pl</CODE> will then fetch the podcast from <CODE>http://pod.drs.ch/heutemorgen_mpx.xml</CODE>, download all (new) files 
 and add them to the 'Heute Morgen' playlist!
 </P><P>
 
@@ -958,13 +958,13 @@ For the iPod nano you should use:
 <TABLE><tr><td>&nbsp;</td><td class=example><pre>model = nano_4g
 </pre></td></tr></table></P><P>
 
-To specify a cover while adding files you'd use the <CODE>--artwork</CODE> switch of <CODE>gnupod_addsong.pl</CODE>. Example:
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_addsong.pl --artwork cover.jpg *.mp3
+To specify a cover while adding files you'd use the <CODE>--artwork</CODE> switch of <CODE>gnupod-addsong.pl</CODE>. Example:
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-addsong.pl --artwork cover.jpg *.mp3
 </pre></td></tr></table></P><P>
 
-Use <CODE>gnupod_search.pl</CODE> to change/add artwork for existing files. Example:
+Use <CODE>gnupod-search.pl</CODE> to change/add artwork for existing files. Example:
 <TABLE><tr><td>&nbsp;</td><td class=example><pre># Set cover.jpg as artwork for all songs that match album =~ /Katamari/i
-gnupod_search.pl --artwork cover.jpg --album Katamari
+gnupod-search.pl --artwork cover.jpg --album Katamari
 </pre></td></tr></table></P><P>
 
 don't forget to run <CODE>mktunes.pl</CODE> afterwards.
@@ -1042,19 +1042,19 @@ If your computer crashed while uploading/deleting songs, you may
 have some 'zombie' files.
 </P><P>
 
-In this case, you can use 'gnupod_check.pl' to search 'lost' files.
-gnupod_check.pl will tell you what you could do to fix it.
+In this case, you can use 'gnupod-check.pl' to search 'lost' files.
+gnupod-check.pl will tell you what you could do to fix it.
 </P><P>
 
-If gnupod_check.pl found many errors (or you lost your GNUtunesDB.xml),
-you can 'rebuild' an GNUtunesDB using <CODE>gnupod_addsong.pl</CODE>
+If gnupod-check.pl found many errors (or you lost your GNUtunesDB.xml),
+you can 'rebuild' an GNUtunesDB using <CODE>gnupod-addsong.pl</CODE>
 </P><P>
 
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod_addsong.pl --restore -m /mnt/ipod
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>gnupod-addsong.pl --restore -m /mnt/ipod
 </pre></td></tr></table></P><P>
 
 First, it will create a clean, empty GNUtunesDB, it won't delete any songs on the iPod.
-Then, <CODE>gnupod_addsong.pl --restore</CODE> will re-create a GNUtunesDB including the Songs which are on the iPod
+Then, <CODE>gnupod-addsong.pl --restore</CODE> will re-create a GNUtunesDB including the Songs which are on the iPod
 </P><P>
 
 I think nobody will ever have to do this.. but it maybe usefull to know that it's possible
@@ -1218,7 +1218,7 @@ iPod and iTunes)
 </P><P>
 
 Only mktunes.pl and tunes2pod.pl have to worry about the iTunesDB format: all other tools 
-(gnupod_addsong.pl for example) only have to deal with the XML file called GNUtunesDB.
+(gnupod-addsong.pl for example) only have to deal with the XML file called GNUtunesDB.
 </P><P>
 
 It's important to keep the iTunesDB and GNUtunesDB 'in sync', so everytime you change the 
@@ -1365,7 +1365,7 @@ principally for works whose purpose is instruction or reference.
 </P><P>
 
 <LI>
-APPLICABILITY AND DEFINITIONS
+APPLICABILITY AND DEFinitIONS
 <P>
 
 This License applies to any manual or other work, in any medium, that

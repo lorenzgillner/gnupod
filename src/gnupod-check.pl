@@ -33,12 +33,12 @@ use vars qw(%opts %TRACKER);
 #Get maximal Pathlength from XMLHelper constant
 my $xmlhelper_maxpathlen = GNUpod::XMLhelper::MAX_PATHLENGTH;
 
-print "gnupod_check.pl Version ###__VERSION__### (C) Adrian Ulrich\n";
+print "gnupod-check.pl Version ###__VERSION__### (C) Adrian Ulrich\n";
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 #Don't add xml and itunes opts.. we *NEED* the mount opt to be set..
 GetOptions(\%opts, "version", "help|h", "mount|m=s", "fixit");
-GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', 'automktunes'=>'b', model=>'s'}, "gnupod_check");
+GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', 'automktunes'=>'b', model=>'s'}, "gnupod-check");
 
 usage() if $opts{help};
 version() if $opts{version};
@@ -54,7 +54,7 @@ sub go {
 	
 	%TRACKER=( GLOBFILES => 0, ITFILES => 0, TIME => 0, SIZE => 0, ERR => 0, FIXED => 0 );
 	print "Pass 1: Checking Files in the GNUtunesDB.xml...\n";
-	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod_INIT.pl?\n");
+	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
 	print "Pass 2: Checking Files on the iPod...\n";
 	checkGNUtunes($con);
@@ -87,7 +87,7 @@ sub go {
 		if($TRACKER{ERR} > 25) {
 			print " -> I found MANY ($TRACKER{ERR}) errors. Maybe you should run\n";
 			print "    '$0 --fixit' to let me fix this errors. If it still doesn't help, run\n";
-			print "    'gnupod_addsong.pl --restore'. This would wipe all your Playlists\n";
+			print "    'gnupod-addsong.pl --restore'. This would wipe all your Playlists\n";
 			print "    but would cure your iPod for sure.\n";
 		}
   }
@@ -123,7 +123,7 @@ sub newfile {
 	my $rp = GNUpod::XMLhelper::realpath($opts{mount},$el->{file}->{path});
 	my $id = $el->{file}->{id};
 	
-	my $HINT = "Run 'gnupod_check.pl --fixit' to wipe this zombie";
+	my $HINT = "Run 'gnupod-check.pl --fixit' to wipe this zombie";
 	
 	$TRACKER{SIZE}+=int($el->{file}->{filesize});
 	$TRACKER{TIME}+=int($el->{file}->{time});
@@ -224,8 +224,8 @@ sub usage {
 my($rtxt) = @_;
 die << "EOF";
 $rtxt
-Usage: gnupod_check.pl [-h] [-m directory]
-gnupod_check.pl checks for 'lost' files
+Usage: gnupod-check.pl [-h] [-m directory]
+gnupod-check.pl checks for 'lost' files
 
    -h, --help              display this help and exit
        --version           output version information and exit
@@ -240,7 +240,7 @@ EOF
 
 sub version {
 die << "EOF";
-gnupod_check.pl (gnupod) ###__VERSION__###
+gnupod-check.pl (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2004
 
 This is free software; see the source for copying conditions.  There is NO
@@ -251,11 +251,11 @@ EOF
 
 =head1 NAME
 
-gnupod_check.pl - Check for lost/zombie files on the iPod
+gnupod-check.pl - Check for lost/zombie files on the iPod
 
 =head1 SYNOPSIS
 
-B<gnupod_check.pl> [OPTION]...
+B<gnupod-check.pl> [OPTION]...
 
 =head1 DESCRIPTION
 

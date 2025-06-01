@@ -165,11 +165,11 @@ sub StartItunesDBSync {
 }
 
 ######################################################################
-# Call gnupod_otgsync.pl
+# Call gnupod-otgsync.pl
 sub StartOnTheGoSync {
 	my($con) = @_;
 	
-	my $XBIN = "$con->{bindir}/gnupod_otgsync.pl";
+	my $XBIN = "$con->{bindir}/gnupod-otgsync.pl";
 	
 	if(-x $XBIN) {
 		{

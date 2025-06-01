@@ -1,4 +1,4 @@
-AC_INIT(GNUpod, 0.99.9, bug-gnupod@nongnu.org)
+AC_INIT([GNUpod],[0.99.9],[bug-gnupod@nongnu.org])
 
 printf "%s" $PACKAGE_VERSION > .gnupod_version
 
@@ -156,7 +156,8 @@ convert --version > /dev/null 2>&1
 
 
 AC_SUBST(PERL)
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
 
 printf "\n"
 printf "\n"

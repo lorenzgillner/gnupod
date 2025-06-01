@@ -15,7 +15,7 @@ $opts{mount} = "/mnt/ipod";
 ####################################################
 # Worker
 sub go {
- #Disable auto-run of tunes2pod or gnupod_otgsync.pl
+ #Disable auto-run of tunes2pod or gnupod-otgsync.pl
  $opts{_no_sync} = 1;
  my $con = GNUpod::FooBar::connect(\%opts);
  usage($con->{status}."\n") if $con->{status};

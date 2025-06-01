@@ -1,6 +1,6 @@
 ###__PERLBIN__###
 #  Copyright (C) 2009 Heinrich Langos <henrik-gnupod at prak.org>
-#  based on gnupod_search by Adrian Ulrich <pab at blinkenlights.ch>
+#  based on gnupod-search by Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
 #  URL: http://www.gnu.org/software/gnupod/
@@ -30,7 +30,7 @@ use GNUpod::FindHelper;
 use GNUpod::ArtworkDB;
 use Getopt::Long;
 
-my $programName = "gnupod_delete.pl";
+my $programName = "gnupod-delete.pl";
 
 my $fullversionstring = "$programName Version ###__VERSION__### (C) Heinrich Langos";
 
@@ -44,8 +44,8 @@ my $getoptres = GetOptions(\%opts, "version", "help|h", "mount|m=s",
 	@GNUpod::FindHelper::findoptions
 );
 
-# take model and mountpoint from gnupod_search preferences
-GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s'}, "gnupod_search");
+# take model and mountpoint from gnupod-search preferences
+GNUpod::FooBar::GetConfig(\%opts, {mount=>'s', model=>'s'}, "gnupod-search");
 
 
 usage()   if ($opts{help} || !$getoptres );
@@ -85,7 +85,7 @@ sub main {
 
 	my($con) = @_;
 
-	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod_INIT.pl?\n");
+	GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
 	#print "resultlist:\n".Dumper(\@resultlist);
 
@@ -130,7 +130,7 @@ sub main {
 			foreach my $res (@resultlist) { $resultids{$res->{id}}=1; }
 			$firstrun = 0;
 			$AWDB = GNUpod::ArtworkDB->new(Connection=>$connection, DropUnseen=>1);
-			GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod_INIT.pl?\n");
+			GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 			GNUpod::XMLhelper::writexml($con,{automktunes=>$opts{automktunes}});
 			$AWDB->WriteArtworkDb;
 		}
@@ -231,25 +231,25 @@ EOF
 
 =head1 NAME
 
-gnupod_delete.pl  - delete songs from your iPod
+gnupod-delete.pl  - delete songs from your iPod
 
 =head1 SYNOPSIS
 
-gnupod_delete.pl [OPTION]
+gnupod-delete.pl [OPTION]
 
 =head1 DESCRIPTION
 
-C<gnupod_delete.pl> searches the F<GNUtunesDB.xml> file for matches to its
+C<gnupod-delete.pl> searches the F<GNUtunesDB.xml> file for matches to its
 arguments and deletes those files from your ipod.
 
 =head1 OPTIONS
 
-###___PODINSERT man/gnupod_find-options.pod___###
+###___PODINSERT man/gnupod-find-options.pod___###
 
 =head2 Interaction Options
 
-By default gnupod_delete.pl will only delete up to 20 songs without asking.
-If there are more than 20 matches then gnupod_delete.pl will present
+By default gnupod-delete.pl will only delete up to 20 songs without asking.
+If there are more than 20 matches then gnupod-delete.pl will present
 the matches and ask the user to confirm the deletion.
 
 =over 4

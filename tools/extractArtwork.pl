@@ -24,7 +24,7 @@ usage($connection->{status}."\n") if $connection->{status};
 my $AWDB = GNUpod::ArtworkDB->new(Connection=>$connection, DropUnseen=>0);
 
 $AWDB->LoadArtworkDb;
-GNUpod::XMLhelper::doxml($connection->{xml}) or usage("Failed to parse $connection->{xml}, did you run gnupod_INIT.pl?\n");
+GNUpod::XMLhelper::doxml($connection->{xml}) or usage("Failed to parse $connection->{xml}, did you run gnupod-init?\n");
 
 #print Data::Dumper::Dumper($AWDB);
 

@@ -74,17 +74,17 @@
 ## the attibutes in iTunesDB with those in GNUtunesDB.xml to make sure
 ## attributes not present in iTunesDB will not be lost
 
-# *** gnupod_search.pl ***
+# *** gnupod-search.pl ***
 
 ## Always match only once
-# gnupod_search.match-once = 1
+# gnupod-search.match-once = 1
 
 
-# *** gnupod_addsong.pl ***
+# *** gnupod-addsong.pl ***
 
 ## Disable ID3V2 Tag reading
-# gnupod_addsong.disable-v2 = 1
+# gnupod-addsong.disable-v2 = 1
 
 ## Disable ID3V1 Tag reading
-# gnupod_addsong.disable-v1 = 1
+# gnupod-addsong.disable-v1 = 1
 

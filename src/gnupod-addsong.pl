@@ -38,7 +38,7 @@ use constant MEDIATYPE_PODCAST_VIDEO => 6;
 use constant MACTIME => GNUpod::FooBar::MACTIME;
 use vars qw(%opts %dupdb_normal %dupdb_lazy %dupdb_podcast $int_count %podcast_infos %podcast_channel_infos %per_file_info);
 
-print "gnupod_addsong.pl Version ###__VERSION__### (C) Adrian Ulrich\n";
+print "gnupod-addsong.pl Version ###__VERSION__### (C) Adrian Ulrich\n";
 
 $int_count = 3; #The user has to send INT (Ctrl+C) x times until we stop
 
@@ -56,7 +56,7 @@ GNUpod::FooBar::GetConfig(\%opts, {'decode'=>'s', mount=>'s', duplicate=>'b', mo
                                    'disable-v1'=>'b', 'disable-v2'=>'b', 'disable-ape-tag'=>'b', 'set-songnum'=>'b',
                                    'min-vol-adj'=>'i', 'max-vol-adj'=>'i', 'automktunes'=>'b', 'bgcolor'=>'s',
                                    'podcast-files-limit'=>'i', 'podcast-cache-dir'=>'s', 'podcast-artwork'=>'b' },
-                                   "gnupod_addsong");
+                                   "gnupod-addsong");
 
 
 
@@ -127,7 +127,7 @@ sub startup {
 				delete($opts{artwork});
 			}
 		}
-		GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod_INIT.pl?\n");
+		GNUpod::XMLhelper::doxml($con->{xml}) or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 	}
 	
 	# Check volume adjustment options for sanity
@@ -732,7 +732,7 @@ sub checkdup {
 #Sighandler
 sub handle_int {
  if($int_count) {
-  warn "RECEIVED SIGINT (CTRL+C): gnupod_addsong.pl is still working! hit CTRL+C again $int_count time(s) to quit.\n";
+  warn "RECEIVED SIGINT (CTRL+C): gnupod-addsong.pl is still working! hit CTRL+C again $int_count time(s) to quit.\n";
   $int_count--;
  }
  else {
@@ -747,7 +747,7 @@ sub usage {
 my($rtxt) = @_;
 die << "EOF";
 $rtxt
-Usage: gnupod_addsong.pl [-h] [-m directory] File1 File2 ...
+Usage: gnupod-addsong.pl [-h] [-m directory] File1 File2 ...
 
    -h, --help                       display this help and exit
        --version                    output version information and exit
@@ -794,7 +794,7 @@ EOF
 
 sub version {
 die << "EOF";
-gnupod_addsong.pl (gnupod) ###__VERSION__###
+gnupod-addsong.pl (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2008
 
 This is free software; see the source for copying conditions.  There is NO
@@ -805,15 +805,15 @@ EOF
 
 =head1 NAME
 
-gnupod_addsong.pl  - Adds files to the iPod
+gnupod-addsong.pl  - Adds files to the iPod
 
 =head1 SYNOPSIS
 
-	gnupod_addsong.pl [OPTION]... File1 File2 ...
+	gnupod-addsong.pl [OPTION]... File1 File2 ...
 
 =head1 DESCRIPTION
 
-C<gnupod_addsong.pl> copies songs onto the iPod and updates the GNUtunesDB.xml
+C<gnupod-addsong.pl> copies songs onto the iPod and updates the GNUtunesDB.xml
 database.  For these changes to be visible to the iPod, C<mktunes> must be run.
 
 =head1 OPTIONS
@@ -854,7 +854,7 @@ data not stored in the mp3 header information.
 
 =item -d, --duplicate
 
-It isn't possible to add the same MP3 multiple times, gnupod_addsong.pl detects
+It isn't possible to add the same MP3 multiple times, gnupod-addsong.pl detects
 duplicates (Duplicate = same filesize/time and ID3Tag name). You can disable
 the duplicate-detection with the '--duplicate' switch.
 
@@ -899,7 +899,7 @@ Limit the number of files that are downloaded.
 =head2 Decoding
 
 MP3/WAV (RIFF) and M4A (Apple AAC) files can be added directly.  FLAC and
-OGG files can be decoded and also added.  C<gnupod_addsong.pl> attempts to
+OGG files can be decoded and also added.  C<gnupod-addsong.pl> attempts to
 'auto-detect' the encoding.
 
 (Note: To use all features of --decode, you will have to install
@@ -935,7 +935,7 @@ You may be able to save some space if you do not need crystal-clear sound.
 By default, GNUpod uses the ID3 tags included in the mp3 header
 information.  If this information is incorrect, incomplete or just not what
 you want, use these options.  You can also change track information later with
-L<gnupod_search.pl>.
+L<gnupod-search.pl>.
 
 =over 4
 
@@ -1021,7 +1021,7 @@ You can use the C<--playlist> option when adding songs to add a song into
 the nominated playlist. 
 
 	# Add songs into playlists
-	gnupod_addsong.pl -m /mnt/ipod --playlist=Party --playlist=Driving /tmp/*.mp3
+	gnupod-addsong.pl -m /mnt/ipod --playlist=Party --playlist=Driving /tmp/*.mp3
 
 Playlists can be manually created after the songs have been added.  To do
 this, you'll need to mount your iPod and open the file (relative to your
@@ -1146,24 +1146,24 @@ order for your iPod to distinguish between Podcasts and songs, we need to
 make sure the media type is set correctly.  To add a single podcast do the
 following:
 
-	gnupod_addsong.pl -m /mnt/ipod -p "Podcast Title" --playlist-is-podcast podcast.mp3
+	gnupod-addsong.pl -m /mnt/ipod -p "Podcast Title" --playlist-is-podcast podcast.mp3
 
 You can add multiple podcasts to the same title as well:
 
-	gnupod_addsong.pl -m /mnt/ipod -p "Podcast Title" --playlist-is-podcast podcasts/*
+	gnupod-addsong.pl -m /mnt/ipod -p "Podcast Title" --playlist-is-podcast podcasts/*
 
 Including C<playlist-is-podcast> ensures that all of the attributes are set
 correctly (shuffleskip, bookmarkable, mediatype etc).
 
 =head2 Downloading podcasts
 
-gnupod_addsong.pl can also download podcasts and create such playlists
+gnupod-addsong.pl can also download podcasts and create such playlists
 itself:
 
-	gnupod_addsong.pl -m /mnt/ipod -p "Heute Morgen" --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
+	gnupod-addsong.pl -m /mnt/ipod -p "Heute Morgen" --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
 
 Running this command will create a Playlist called 'Heute Morgen' (-p) and
-set podcast="1" (--playlist-is-podcast). gnupod_addsong.pl will then fetch
+set podcast="1" (--playlist-is-podcast). gnupod-addsong.pl will then fetch
 the podcast from http://pod.drs.ch/heutemorgen_mpx.xml, download all (new)
 files and add them to the 'Heute Morgen' playlist!
 
@@ -1206,14 +1206,14 @@ Late 2008-nanos need this setting:
 To specify a cover while adding files you'd use the `--artwork'
 switch. Example:
 
-     gnupod_addsong.pl --artwork cover.jpg *.mp3
+     gnupod-addsong.pl --artwork cover.jpg *.mp3
 
 For podcasts you can download the artwork from the rss feed. Example:
 
-     gnupod_addsong.pl -p "Heute Morgen" --podcast-artwork --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
+     gnupod-addsong.pl -p "Heute Morgen" --podcast-artwork --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
 
 
-Use L<gnupod_search.pl> to change/add artwork for existing files.
+Use L<gnupod-search.pl> to change/add artwork for existing files.
 Don't forget to run L<mktunes.pl> afterwards.
 
 
@@ -1227,28 +1227,28 @@ Don't forget to run L<mktunes.pl> afterwards.
 	tunes2pod.pl -m /mnt/ipod
 
 	# Add a song 
-	gnupod_addsong.pl -m /mnt/ipod /tmp/foo.mp3
+	gnupod-addsong.pl -m /mnt/ipod /tmp/foo.mp3
 
 	# You can also use wild cards and add more than one song at a time
-	gnupod_addsong.pl -m /mnt/ipod /mnt/mp3/seiken_densetsu2_ost/* /mnt/mp3/xenogears/ost?/*
+	gnupod-addsong.pl -m /mnt/ipod /mnt/mp3/seiken_densetsu2_ost/* /mnt/mp3/xenogears/ost?/*
 
 	# Convert to mp3 on the fly
-	gnupod_addsong.pl -m /mnt/ipod myfile.flac myfile.ogg --decode=mp3
+	gnupod-addsong.pl -m /mnt/ipod myfile.flac myfile.ogg --decode=mp3
 
 	# Add songs with artwork
-	gnupod_addsong.pl -m /mnt/ipod /mnt/mp3/amos/* --artwork=amos.jpg
+	gnupod-addsong.pl -m /mnt/ipod /mnt/mp3/amos/* --artwork=amos.jpg
 
 	# Add songs into playlists
-	gnupod_addsong.pl -m /mnt/ipod --playlist=Party --playlist=Driving /tmp/*.mp3
+	gnupod-addsong.pl -m /mnt/ipod --playlist=Party --playlist=Driving /tmp/*.mp3
 
 	# Add a podcast (not the same as a regular song)
-	gnupod_addsong.pl -m /mnt/ipod -p "Podcast Title" --playlist-is-podcast podcast.mp3
+	gnupod-addsong.pl -m /mnt/ipod -p "Podcast Title" --playlist-is-podcast podcast.mp3
 
 	# Add more than one podcast
-	gnupod_addsong.pl -m /mnt/ipod -p "Podcast Title" --playlist-is-podcast podcasts/*
+	gnupod-addsong.pl -m /mnt/ipod -p "Podcast Title" --playlist-is-podcast podcasts/*
 
 	# Fetch podcasts online and add to iPod
-	gnupod_addsong.pl -m /mnt/ipod -p "Heute Morgen" --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
+	gnupod-addsong.pl -m /mnt/ipod -p "Heute Morgen" --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
 
 	# Record the changes to the iTunes database (this is essential)
 	mktunes.pl -m /mnt/ipod

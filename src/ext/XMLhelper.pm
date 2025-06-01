@@ -78,7 +78,7 @@ sub getpath {
 		my @aviable_targets     = bsd_glob($xconn->{musicdir}."/*", $xconn->{autotest}?GLOB_NOCASE:GLOB_NOSORT);
 		
 		unless(int(@aviable_targets)) {
-			warn "No iPod folders found at $xconn->{mountpoint}, did you run gnupod_INIT.pl ?\n";
+			warn "No iPod folders found at $xconn->{mountpoint}, did you run gnupod-init ?\n";
 			return undef;
 		}
 		if(length($current_extension) != 0) {

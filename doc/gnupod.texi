@@ -455,15 +455,15 @@ Mount the iPod (I assume you mount it at /mnt/ipod) as described in 'Using FireW
 
 If the iPod is freshly formatted or you never used GNUpod before with this iPod, run
 @example
-gnupod_INIT.pl -m /mnt/ipod
+gnupod-init -m /mnt/ipod
 @end example
 
-gnupod_INIT.pl will create the default directory tree and creates an empty GNUtunesDB 
+gnupod-init will create the default directory tree and creates an empty GNUtunesDB 
 (or if it finds an iTunesDB, it runs tunes2pod.pl to convert the iTunesDB to an GNUtunesDB)
 
 Use
 @example
-gnupod_INIT.pl -m /mnt/ipod --france
+gnupod-init -m /mnt/ipod --france
 @end example
 
 if you would like to enable the 'EU-Volume-Limit' (=decrease max. volume).
@@ -486,39 +486,39 @@ Edit this file and save it as ~/.gnupodrc or on your iPod (iPod_Control/.gnupod/
 @node Add files
 @section Add files
 
-To add files, we use the script called @code{@w{gnupod_addsong.pl}}.
+To add files, we use the script called @code{@w{gnupod-addsong.pl}}.
 
 First, mount the iPod (eg. at /mnt/ipod) if it isn't mounted.
 
-If you would like to add the file /tmp/foo.mp3, run gnupod_addsong.pl like this:
+If you would like to add the file /tmp/foo.mp3, run gnupod-addsong.pl like this:
 @example
-gnupod_addsong.pl -m /mnt/ipod /tmp/foo.mp3
+gnupod-addsong.pl -m /mnt/ipod /tmp/foo.mp3
 @end example
 
 You can also use wildcards:
 @example
-gnupod_addsong.pl -m /mnt/ipod /mnt/mp3/seiken_densetsu2_ost/* /mnt/mp3/xenogears/ost?/*
+gnupod-addsong.pl -m /mnt/ipod /mnt/mp3/seiken_densetsu2_ost/* /mnt/mp3/xenogears/ost?/*
 @end example
 
-It isn't possible to add the same MP3 multiple times, gnupod_addsong.pl detects duplicates 
+It isn't possible to add the same MP3 multiple times, gnupod-addsong.pl detects duplicates 
 (Duplicate = same filesize/time and ID3Tag name). You can disable the duplicate-detection 
 with the '--duplicate' switch.
 
-gnupod_addsong.pl understands MP3/WAV (RIFF) and M4A (Apple AAC - NO DRM!) files.
+gnupod-addsong.pl understands MP3/WAV (RIFF) and M4A (Apple AAC - NO DRM!) files.
 
 It can also convert FLAC and OGG files on-the-fly:
 
 Using this example, it would convert the two files into MP3 and add them to the iPod.
 
 @example
-gnupod_addsong.pl -m /mnt/ipod myfile.flac myfile.ogg --decode=mp3
+gnupod-addsong.pl -m /mnt/ipod myfile.flac myfile.ogg --decode=mp3
 @end example
 
 (Note: To use all features of --decode, you will have to install
  Audio::FLAC::Header, Ogg::Vorbis::Header::PurePerl, lame, flac, oggenc and faac)
 
 
-gnupod_addsong.pl tries to 'auto-detect' the encoding of the ID3 Tag. 
+gnupod-addsong.pl tries to 'auto-detect' the encoding of the ID3 Tag. 
 Sometimes this works (in most cases ;) ) sometimes it doesn't. If it doesn't work for you, 
 feel free to send me an example-file: pab@@blinkenligts.ch
 
@@ -529,33 +529,33 @@ DO NOT umount the iPod yet! First read the section 'Unplug the iPod'!
 @node Search files
 @section Search files
 
-GNUpod includes a tool called @code{@w{gnupod_search.pl}} that helps you search for files.
+GNUpod includes a tool called @code{@w{gnupod-search.pl}} that helps you search for files.
 
 Maybe you would like to search for the artist called 'Schlummiguch'. In this case, run
 @example
-gnupod_search.pl -m /mnt/ipod -a "Schlummiguch"
+gnupod-search.pl -m /mnt/ipod -a "Schlummiguch"
 @end example
 
-Note: gnupod_search.pl assumes RegExp input.
-Please have a look at @code{@w{gnupod_search.pl --help}} for more information.
+Note: gnupod-search.pl assumes RegExp input.
+Please have a look at @code{@w{gnupod-search.pl --help}} for more information.
 
 @node Remove files
 @section Remove files
 
-Removing files is done using @code{@w{gnupod_search.pl -d}}.
+Removing files is done using @code{@w{gnupod-search.pl -d}}.
 To Remove all files from the artist 'Schlummiguch', run
 @example
-gnupod_search.pl -m /mnt/ipod -a "Schlummiguch" -d
+gnupod-search.pl -m /mnt/ipod -a "Schlummiguch" -d
 @end example
 
 
 @node Edit tags
 @section Edit tags
 
-You can use @code{@w{gnupod_search.pl}} to edit tags (like artist, album, etc..)
+You can use @code{@w{gnupod-search.pl}} to edit tags (like artist, album, etc..)
 
 @example
-gnupod_search.pl --artist="Alfred Neumann" --rename="artist=John Doe" --rename="rating=100"
+gnupod-search.pl --artist="Alfred Neumann" --rename="artist=John Doe" --rename="rating=100"
 @end example
 
 This example searches all files from 'Alfred Neumann', changes the artist into 'John Doe' and
@@ -638,7 +638,7 @@ You can also use Smart-Playlists with Firmware >= 2.x
 For more examples have a look at @code{@w{doc/gnutunesdb.example}} included in the GNUpod tarball.
 Also check out http://blinkenlights.ch/gnupod/mkspl.html for a 'JavaScript SPL-Creator'
 
-You can also use the --playlist option of gnupod_addsong.pl. This will create and add the listed songs to the 
+You can also use the --playlist option of gnupod-addsong.pl. This will create and add the listed songs to the 
 named playlist.
 
 Don't forget to run mktunes before umounting! (See 'Unplug the iPod')
@@ -651,14 +651,14 @@ your iPod to distinguish between podcasts and songs, we need to make sure the
 media type is set correctly. To add a single podcast do the following:
 
 @example
-gnupod_addsong.pl -p "Podcast Title" --playlist-is-podcast podcast.mp3
+gnupod-addsong.pl -p "Podcast Title" --playlist-is-podcast podcast.mp3
 @end example
 You can add multiple podcasts to the same title as well:
 @example
-gnupod_addsong.pl -p "Podcast Title" --playlist-is-podcast podcasts/*
+gnupod-addsong.pl -p "Podcast Title" --playlist-is-podcast podcasts/*
 @end example
 This also tells the iPod to skip this file when shuffling files.  See
-gnupod_addsong.pl -h for more options.
+gnupod-addsong.pl -h for more options.
 
 If you want to change existing playlists to
 podcast playlists you just need to set the podcast flag to '1':
@@ -671,14 +671,14 @@ podcast playlists you just need to set the podcast flag to '1':
 
 Such a playlist will show up as a Podcast after running mktunes.pl
 
-gnupod_addsong.pl can also download podcasts and create such playlists itself:
+gnupod-addsong.pl can also download podcasts and create such playlists itself:
 
 @example
-gnupod_addsong.pl -p "Heute Morgen" --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
+gnupod-addsong.pl -p "Heute Morgen" --playlist-is-podcast http://pod.drs.ch/heutemorgen_mpx.xml
 @end example
 
 Running this command will create a Playlist called 'Heute Morgen' (@code{@w{-p}}) and set @code{@w{podcast="1"}} (@code{@w{--playlist-is-podcast}}).
-@code{@w{gnupod_addsong.pl}} will then fetch the podcast from @code{@w{http://pod.drs.ch/heutemorgen_mpx.xml}}, download all (new) files 
+@code{@w{gnupod-addsong.pl}} will then fetch the podcast from @code{@w{http://pod.drs.ch/heutemorgen_mpx.xml}}, download all (new) files 
 and add them to the 'Heute Morgen' playlist!
 
 @node Adding cover artwork
@@ -706,16 +706,16 @@ model = nano_4g
 @end example
 
 
-To specify a cover while adding files you'd use the @code{@w{--artwork}} switch of @code{@w{gnupod_addsong.pl}}. Example:
+To specify a cover while adding files you'd use the @code{@w{--artwork}} switch of @code{@w{gnupod-addsong.pl}}. Example:
 @example
-gnupod_addsong.pl --artwork cover.jpg *.mp3
+gnupod-addsong.pl --artwork cover.jpg *.mp3
 @end example
 
 
-Use @code{@w{gnupod_search.pl}} to change/add artwork for existing files. Example:
+Use @code{@w{gnupod-search.pl}} to change/add artwork for existing files. Example:
 @example
 # Set cover.jpg as artwork for all songs that match album =~ /Katamari/i
-gnupod_search.pl --artwork cover.jpg --album Katamari
+gnupod-search.pl --artwork cover.jpg --album Katamari
 @end example
 
 don't forget to run @code{@w{mktunes.pl}} afterwards.
@@ -761,19 +761,19 @@ Added songs won't be visible on the iPod if you did not run mktunes.pl before um
 If your computer crashed while uploading/deleting songs, you may
 have some 'zombie' files.
 
-In this case, you can use 'gnupod_check.pl' to search 'lost' files.
-gnupod_check.pl will tell you what you could do to fix it.
+In this case, you can use 'gnupod-check.pl' to search 'lost' files.
+gnupod-check.pl will tell you what you could do to fix it.
 
 
-If gnupod_check.pl found many errors (or you lost your GNUtunesDB.xml),
-you can 'rebuild' an GNUtunesDB using @code{gnupod_addsong.pl}
+If gnupod-check.pl found many errors (or you lost your GNUtunesDB.xml),
+you can 'rebuild' an GNUtunesDB using @code{gnupod-addsong.pl}
 
 @example
-gnupod_addsong.pl --restore -m /mnt/ipod
+gnupod-addsong.pl --restore -m /mnt/ipod
 @end example
 
 First, it will create a clean, empty GNUtunesDB, it won't delete any songs on the iPod.
-Then, @code{gnupod_addsong.pl --restore} will re-create a GNUtunesDB including the Songs which are on the iPod
+Then, @code{gnupod-addsong.pl --restore} will re-create a GNUtunesDB including the Songs which are on the iPod
 
 I think nobody will ever have to do this.. but it maybe usefull to know that it's possible
 (Note: Of course you'll lose your Playlists)
@@ -870,7 +870,7 @@ XML File (the GNUtunesDB).
 iPod and iTunes)
 
 Only mktunes.pl and tunes2pod.pl have to worry about the iTunesDB format: all other tools 
-(gnupod_addsong.pl for example) only have to deal with the XML file called GNUtunesDB.
+(gnupod-addsong.pl for example) only have to deal with the XML file called GNUtunesDB.
 
 It's important to keep the iTunesDB and GNUtunesDB 'in sync', so everytime you change the 
 GNUtunesDB (by hand or using gnupod_something.pl) you'll have to run @code{@w{mktunes.pl}}.

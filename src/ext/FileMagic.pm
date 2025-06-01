@@ -51,11 +51,11 @@ GNUpod::FileMagic - Convert media files to iPod compatible formats and/or extrac
 # done!
 #
 
-my $NN_HEADERS = {'MThd' => { encoder=>'gnupod_convert_MIDI.pl', ftyp=>'MIDI'},
-                  'fLaC' => { encoder=>'gnupod_convert_FLAC.pl', ftyp=>'FLAC'},
-                  'OggS' => { encoder=>'gnupod_convert_OGG.pl',  ftyp=>'OGG' },
-                  'MAC ' => { encoder=>'gnupod_convert_APE.pl',  ftyp=>'APE' },
-                  'RIFF' => { encoder=>'gnupod_convert_RIFF.pl', ftyp=>'RIFF', magic2=>'AVI '}};
+my $NN_HEADERS = {'MThd' => { encoder=>'gnupod-convert-MIDI.pl', ftyp=>'MIDI'},
+                  'fLaC' => { encoder=>'gnupod-convert-FLAC.pl', ftyp=>'FLAC'},
+                  'OggS' => { encoder=>'gnupod-convert-OGG.pl',  ftyp=>'OGG' },
+                  'MAC ' => { encoder=>'gnupod-convert-APE.pl',  ftyp=>'APE' },
+                  'RIFF' => { encoder=>'gnupod-convert-RIFF.pl', ftyp=>'RIFF', magic2=>'AVI '}};
 
 
 

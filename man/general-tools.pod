@@ -39,13 +39,13 @@ If your computer crashed while uploading/deleting songs, you may have
 some 'zombie' files.  This can also occur if you forget to unmount your
 iPod before you unplug it from the computer.
 
-In this case, you can use C<gnupod_check.pl> to search 'lost' files.
-gnupod_check.pl will tell you what you could do to fix it.
+In this case, you can use C<gnupod-check.pl> to search 'lost' files.
+gnupod-check.pl will tell you what you could do to fix it.
 
-If gnupod_check.pl found many errors (or you lost your
+If gnupod-check.pl found many errors (or you lost your
 F<GNUtunesDB.xml>), you can 'rebuild' an GNUtunesDB using:
 
-     gnupod_addsong.pl --restore -m /mnt/ipod
+     gnupod-addsong.pl --restore -m /mnt/ipod
 
 This won't delete any songs on the iPod but will attempt to recreate the
 F<GNUtunesDB.xml> file including the Songs which are on the iPod and their
@@ -77,11 +77,11 @@ Individual programms have their own man page.
 
 =item *
 
-L<gnupod_addsong> - Add songs, podcasts and books to your iPod.
+L<gnupod-addsong> - Add songs, podcasts and books to your iPod.
 
 =item *
 
-L<gnupod_search> - Search, edit, delete files on your iPod.
+L<gnupod-search> - Search, edit, delete files on your iPod.
 
 =item *
 

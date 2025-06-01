@@ -20,7 +20,7 @@ package GNUpod::Mktunes;
 	
 	sub WriteItunesSD {
 		my($self) = @_;
-		open(ITS, ">", $self->GetConnection->{itunessd}) or die "*** Unable to write the iTunesDB: $!, did you run gnupod_INIT.pl ?\n";
+		open(ITS, ">", $self->GetConnection->{itunessd}) or die "*** Unable to write the iTunesDB: $!, did you run gnupod-init ?\n";
 		binmode(ITS);
 		print ITS GNUpod::iTunesDB::mk_itunes_sd_header({files=>$self->GetFileCount});
 		foreach my $item (@{$self->GetFiles}) {
@@ -43,7 +43,7 @@ package GNUpod::Mktunes;
 		my $outfile = $self->GetConnection->{itunesdb};
 		my $tmpfile = $outfile.".$$";
 		
-		open(ITUNES, ">", $tmpfile) or die "*** Unable to write the iTunesDB: $!, did you run gnupod_INIT.pl ?\n";
+		open(ITUNES, ">", $tmpfile) or die "*** Unable to write the iTunesDB: $!, did you run gnupod-init ?\n";
 		binmode(ITUNES);
 		print ITUNES GNUpod::iTunesDB::mk_mhbd({});
 			$mhbd_size = tell(ITUNES);

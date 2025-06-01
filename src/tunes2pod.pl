@@ -72,7 +72,7 @@ sub convert {
 	
 	if($opts{'low_ram_attr'}) {
 		print "> Parsing GNUtunesDB.xml document to prepare merge of limited attributes...\n";
-		GNUpod::XMLhelper::doxml($con->{xml}) or usage("Could not read $con->{xml}, did you run gnupod_INIT.pl ?");
+		GNUpod::XMLhelper::doxml($con->{xml}) or usage("Could not read $con->{xml}, did you run gnupod-init ?");
 		GNUpod::XMLhelper::resetxml();
 		print "\r> ".$xml_files_parsed." files parsed, converting iTunesDB...\n";
 	}
