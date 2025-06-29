@@ -77,7 +77,7 @@ foreach ( keys(%mhod_id) ) {
     $mhod_array[ $mhod_id{$_} ] = $_;
 }
 
-############ PLAYLIST IPOD-SORT DEFinitION ################
+############ PLAYLIST IPOD-SORT DEFINITION ################
 $PLDEF{sort}{1}  = 'manual';
 $PLDEF{sort}{2}  = 'path';
 $PLDEF{sort}{3}  = 'title';

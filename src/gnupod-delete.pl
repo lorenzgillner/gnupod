@@ -32,21 +32,18 @@ use Getopt::Long;
 
 my $programName = "gnupod-delete.pl";
 
-my $fullversionstring =
-  "$programName Version ###__VERSION__### (C) Heinrich Langos";
+my $fullversionstring = "$programName Version ###__VERSION__### (C) Heinrich Langos";
 
 use vars qw(%opts @keeplist);
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
-my $getoptres =
-  GetOptions( \%opts, "version", "help|h", "mount|m=s",
-    "interactive|i", "force", "playlist|p=s",
-    @GNUpod::FindHelper::findoptions );
+my $getoptres = GetOptions( \%opts, "version", "help|h", "mount|m=s",
+                            "interactive|i", "force", "playlist|p=s",
+                            @GNUpod::FindHelper::findoptions );
 
 # take model and mountpoint from gnupod-search preferences
-GNUpod::FooBar::GetConfig( \%opts, { mount => 's', model => 's' },
-    "gnupod-search" );
+GNUpod::FooBar::GetConfig( \%opts, { mount => 's', model => 's' }, "gnupod-search" );
 
 usage()                              if ( $opts{help} || !$getoptres );
 version()                            if $opts{version};
@@ -55,15 +52,13 @@ if ( $opts{'interactive'} && $opts{'force'} ) {
     usage("Can't use --force and --interactive together.");
 }
 
-my %playlist_names     = ();    # names of the playlists to be deleted
-my %playlist_resultids = ()
-  ;  #ids of the songs to be deleted because they are part of a deleted playlist
+my %playlist_names     = ();  # names of the playlists to be deleted
+my %playlist_resultids = ();  # ids of the songs to be deleted because they are part of a deleted playlist
 
 my @resultlist = ();
-my %resultids  = (); #only used for second pass to skip searching the resultlist
+my %resultids  = ();  # only used for second pass to skip searching the resultlist
 
-my $max_non_interactive_delete =
-  20;                #how many files get deleted without asking (if not forced)
+my $max_non_interactive_delete = 20; # how many files get deleted without asking (if not forced)
 
 my $foo = GNUpod::FindHelper::process_options( \%opts );
 
@@ -89,29 +84,22 @@ sub main {
     my ($con) = @_;
 
     GNUpod::XMLhelper::doxml( $con->{xml} )
-      or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
-
-    #print "resultlist:\n".Dumper(\@resultlist);
+        or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
     if ( $opts{playlist} ) {
-
-        #consolidate playlist results
-
+        # consolidate playlist results
     }
     else {
-
         # sort results list according to users wishes
         @resultlist = sort GNUpod::FindHelper::comparesongs @resultlist;
 
         # crop results according to users wishes
         @resultlist =
           GNUpod::FindHelper::croplist( { results => \@resultlist } );
-
     }
 
     if ( @resultlist or %playlist_names ) {
-
-        #output results
+        # output results
         GNUpod::FindHelper::prettyprint( { results => \@resultlist } )
           if @resultlist;
         if (%playlist_names) {
@@ -122,7 +110,7 @@ sub main {
             }
         }
 
-        #ask confirmation
+        # ask confirmation
         if ( $opts{force} ) {
             $deletionconfirmed = 1;
         }
@@ -138,7 +126,7 @@ sub main {
             $deletionconfirmed = 1;
         }
 
-        #start second run to delete selected files/playlists
+        # start second run to delete selected files/playlists
         if ($deletionconfirmed) {
             foreach my $res (@resultlist) { $resultids{ $res->{id} } = 1; }
             $firstrun = 0;

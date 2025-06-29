@@ -5,24 +5,26 @@
 # This script is licensed under the same terms as GNUpod (The GNU GPL v.2 or later...)
 # <pab at blinkenlights.ch>
 
-use strict;    #of course :)
+use strict;
+use warnings;
+
+use File::Basename;
 
 my %opts = ();
+$opts{MODE}      = $ARGV[0];        # INSTALL MKPGK or REMOVE
+$opts{perlbin}   = $ARGV[1];        # Path to perl
+$opts{podmanbin} = $ARGV[2];        # Path to perldoc
+$opts{bindir}    = $ARGV[3];        # Bindir
+$opts{infodir}   = $ARGV[4];        # Infodir
+$opts{mandir}    = $ARGV[5];        # Mandir
+my $DST   = $ARGV[6] || "/";        # DESTDIR
+my $pmdir = $ARGV[7] || $INC[0];    # perl modules dir
 
-$opts{MODE}      = $ARGV[0];        #INSTALL MKPGK or REMOVE
-$opts{perlbin}   = $ARGV[1];        #Path to perl
-$opts{podmanbin} = $ARGV[2];        #Path to perldoc
-$opts{bindir}    = $ARGV[3];        #Bindir
-$opts{infodir}   = $ARGV[4];        #Infodir
-$opts{mandir}    = $ARGV[5];        #Mandir
-my $DST   = $ARGV[6] || "/";        #DESTDIR
-my $pmdir = $ARGV[7] || $INC[0];    #perl modules dir
+my $VERSION = `cat .gnupod_version`;    #Version of this release
 
-my $VINSTALL = `cat .gnupod_version`;    #Version of this release
-
-#Check if everything looks okay..
+# Check if everything looks okay..
 die "File .gnupod_version does not exist, did you run configure?\n"
-  unless $VINSTALL;
+  unless $VERSION;
 die "Expected 5 arguments, got "
   . int(@ARGV)
   . "\n make will run me, not you! stupid human!"
@@ -32,24 +34,23 @@ die
   if !$pmdir;
 
 if ( $opts{MODE} eq "INSTALL" ) {
-
-    #ok, we are still alive, let's blow up the system ;)
-    print "Installing GNUpod $VINSTALL using gnupod-install 0.26\n";
-    install_scripts( "build/bin/*.pl", $DST . $opts{bindir} );
+    # ok, we are still alive, let's blow up the system ;)
+    print "Installing GNUpod $VERSION using gnupod-install\n";
+    install_bin( "build/bin/*.pl", $DST . $opts{bindir} );
     install_pm( "build/bin/GNUpod", "GNUpod", $DST . $pmdir );
     install_man( "build/man/*.gz", $DST . $opts{mandir} . "/man1" );
     install_info( "build/info/gnupod.info", $DST . $opts{infodir} );
     print "done!\n";
 }
 elsif ( $opts{MODE} eq "BUILD" ) {
-    print "Building GNUpod $VINSTALL...\n";
+    print "Building GNUpod $VERSION...\n";
     install_scripts( "src/*.pl",     "build/bin" );
     install_scripts( "src/ext/*.pm", "build/bin/GNUpod" );
     extract_man( "build/bin/*.pl", "build/man" );
     install_scripts( "doc/gnupod.info", "build/info" );
 }
 elsif ( $opts{MODE} eq "REMOVE" ) {
-    print "Removing GNUpod $VINSTALL...\n";
+    print "Removing GNUpod $VERSION...\n";
     remove_scripts( "build/bin/*.pl", $opts{bindir} );
     remove_pm( "build/bin/GNUpod/*.pm", "GNUpod", $pmdir );
     remove_mandocs( "build/man/*.gz", $opts{mandir} . "/man1" );
@@ -195,7 +196,7 @@ sub ncp {
     open( TARGET, ">$dest" )  or die "Could not write $dest: $!\n";
     while (<SOURCE>) {
         $_ =~ s/###__PERLBIN__###/#!$opts{perlbin}/;
-        $_ =~ s/###__VERSION__###/$VINSTALL/;
+        $_ =~ s/###__VERSION__###/$VERSION/;
         if (/^###___PODINSERT (.*?)___###/) {
             open( INSERT, "$1" ) or die "Could not read podinsert $1: $!\n";
             while (<INSERT>) {
@@ -225,8 +226,7 @@ sub install_pm {
         my $dest = $stepINC . fof($file);
         print " > $file --> $dest\n";
         ncp( $file, $dest );
-        chmod 0444, $dest
-          ;    #Try to chown and chmod .. root should be owner of this modules..
+        chmod 0444, $dest ;    # Try to chown and chmod .. root should be owner of this modules..
         chown 0, 0, $dest;
     }
 }
@@ -242,19 +242,37 @@ sub install_scripts {
         print " > $_ --> $dest/$file\n";
         ncp( $_, "$dest/$file" );
 
-        #'fix' premissions...
+        # 'fix' premissions...
         chmod 0755, "$dest/$file";
 
-        #Try to chown 0:0 .. just try
+        # Try to chown 0:0 .. just try
         chown 0, 0, "$dest/$file";
     }
+}
 
+sub install_bin {
+    my ( $glob, $dest ) = @_;
+
+    foreach ( glob($glob) ) {
+        my $file = fof($_);
+        my $bin = stripext($file);
+        print " > $_ --> $dest/$bin\n";
+        ncp( $_, "$dest/$bin" );
+        chmod 0755, "$dest/$bin";
+        chown 0, 0, "$dest/$bin";
+    }
 }
 
 sub fof {
     my ($path) = @_;
     my (@dull) = split( /\//, $path );
     return $dull[ int(@dull) - 1 ];
+}
+
+sub stripext {
+    my ($file) = @_;
+    $file =~ s/\..*$//;
+    return $file;
 }
 
 sub _recmkdir {

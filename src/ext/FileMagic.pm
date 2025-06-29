@@ -59,11 +59,11 @@ my $NN_HEADERS = {
       { encoder => 'gnupod-convert-RIFF.pl', ftyp => 'RIFF', magic2 => 'AVI ' }
 };
 
-BEGIN {
-    MP3::Info::use_winamp_genres();    # Import winamp genres
-    MP3::Info::use_mp3_utf8(1);        # Force-Enable UTF8 support
-    open( NULLFH, "> /dev/null" ) or die "Could not open /dev/null, $!\n";
-}
+# BEGIN {
+#     MP3::Info::use_winamp_genres();    # Import winamp genres
+#     MP3::Info::use_mp3_utf8(1);        # Force-Enable UTF8 support
+#     open( NULLFH, "> /dev/null" ) or die "Could not open /dev/null, $!\n";
+# }
 
 ########################################################################
 
@@ -107,14 +107,13 @@ Example:
 sub wtf_is {
     my ( $file, $flags, $con ) = @_;
 
-    if ( -d $file ) {    #Don't add dirs
+    if ( -d $file ) {  # Don't add dirs
         warn "FileMagic.pm: '$file' is a directory!\n";
     }
     elsif ( !-r $file ) {
         warn "FileMagic.pm: Can't read '$file'\n";
     }
-    elsif ( my $nnat = __is_NonNative( $file, $flags, $con ) )
-    {                    #Handle non-native formats
+    elsif ( my $nnat = __is_NonNative( $file, $flags, $con ) ) {  # Handle non-native formats
         return ( $nnat->{ref}, { ftyp => $nnat->{codec} }, $nnat->{encoder} );
     }
     elsif ( my $xqt = __is_qt( $file, $flags ) ) {
@@ -130,11 +129,11 @@ sub wtf_is {
     elsif ( my $h = __is_pcm( $file, $flags ) ) {
         return ( $h, { ftyp => "PCM", format => "wav" } );
     }
-    elsif ( my $h = __is_mp3( $file, $flags ) ) {
-        return ( $h, { ftyp => "MP3", format => "mp3" } );
+    elsif ( my $k = __is_mp3( $file, $flags ) ) {
+        return ( $k, { ftyp => "MP3", format => "mp3" } );
     }
 
-    #Still no luck..
+    # Still no luck..
     return ( undef, undef, undef );
 }
 
