@@ -1,1 +1,7 @@
 requires 'Carp'
+requires 'Digest::MD5'
+requires 'Digest::SHA'
+requires 'Data::Dumper'
+requires 'Unicode::String'
+requires 'MP3::Info'
+requires 'File::Glob'

@@ -4,3 +4,4 @@ Makefile
 configure
 *.log
 *.status
+.DS_Store
