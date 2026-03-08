@@ -1,5 +1,3 @@
-package GNUpod::FindHelper;
-
 #  Copyright (C) 2009 Heinrich Langos <henrik-gnupod at prak.org>
 #  based on gnupod-search by Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
@@ -23,8 +21,11 @@ package GNUpod::FindHelper;
 #
 # This product is not supported/written/published by Apple!
 
-use strict;
-use warnings;
+package GNUpod::FindHelper;
+
+# use strict;
+# use warnings;
+
 use GNUpod::XMLhelper;
 use GNUpod::FooBar;
 use GNUpod::ArtworkDB;
@@ -686,7 +687,7 @@ Examines $input and returns the attribute name that was ment.
 If $input equals a known attribute than $input is returned.
 
 If $input is a single character, a translation table will be consulted
-that should translate the same attributes that gnupod-search.pl understood.
+that should translate the same attributes that gnupod-search understood.
 
 If $input is a unique prefix of an existing attribute, that attribute's name
 is returned.

@@ -1,5 +1,3 @@
-package GNUpod::FileMagic;
-
 #  Copyright (C) 2002-2007 Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
@@ -21,8 +19,12 @@ package GNUpod::FileMagic;
 # iTunes and iPod are trademarks of Apple
 #
 # This product is not supported/written/published by Apple!
-use strict;
-use warnings;
+
+package GNUpod::FileMagic;
+
+# use strict;
+# use warnings;
+
 use Unicode::String;
 use MP3::Info qw(:all);
 use GNUpod::FooBar;
@@ -46,17 +48,17 @@ GNUpod::FileMagic - Convert media files to iPod compatible formats and/or extrac
 #
 # How to add a converter:
 # 1. Define the first 4 bytes in NN_HEADERS
-# 2. write a decoder: gnupod_convert_BLA.pl
+# 2. write a decoder: gnupod_convert_BLA
 # done!
 #
 
 my $NN_HEADERS = {
-    'MThd' => { encoder => 'gnupod-convert-MIDI.pl', ftyp => 'MIDI' },
-    'fLaC' => { encoder => 'gnupod-convert-FLAC.pl', ftyp => 'FLAC' },
-    'OggS' => { encoder => 'gnupod-convert-OGG.pl',  ftyp => 'OGG' },
-    'MAC ' => { encoder => 'gnupod-convert-APE.pl',  ftyp => 'APE' },
+    'MThd' => { encoder => 'gnupod-convert-MIDI', ftyp => 'MIDI' },
+    'fLaC' => { encoder => 'gnupod-convert-FLAC', ftyp => 'FLAC' },
+    'OggS' => { encoder => 'gnupod-convert-OGG',  ftyp => 'OGG' },
+    'MAC ' => { encoder => 'gnupod-convert-APE',  ftyp => 'APE' },
     'RIFF' =>
-      { encoder => 'gnupod-convert-RIFF.pl', ftyp => 'RIFF', magic2 => 'AVI ' }
+      { encoder => 'gnupod-convert-RIFF', ftyp => 'RIFF', magic2 => 'AVI ' }
 };
 
 # BEGIN {

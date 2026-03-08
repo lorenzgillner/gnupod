@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+
 use GNUpod::XMLhelper;
 use GNUpod::FooBar;
 use GNUpod::iTunesDB;
@@ -66,7 +67,7 @@ sub go {
 
     if ( GNUpod::FooBar::ItunesDBNeedsSync($con) ) {
         die
-"gnupod-otgsync.pl: Bug detected! You need to run tunes2pod.pl -> Sync broken!\n";
+"gnupod-otgsync: Bug detected! You need to run tunes2pod -> Sync broken!\n";
     }
 
     ##Check if GNUtunesDB <-> iTunesDB is really in-sync
@@ -137,9 +138,9 @@ sub mkotg {
 sub newfile {
     my ($el) = @_;
 
-    #This has to be 'in-sync' with the mktunes.pl method
+    #This has to be 'in-sync' with the mktunes method
     # (GNUtunesDB_id <-> iTunesDB_id)
-    # in mktunes.pl, every <file.. will create a new
+    # in mktunes, every <file.. will create a new
     # id, like here :)
 
     push( @keeper, int( $el->{file}->{id} ) );
@@ -184,11 +185,11 @@ sub usage {
 
 =head1 NAME
 
-gnupod-otgsync.pl - Helper script for On-The-Go data
+gnupod-otgsync - Helper script for On-The-Go data
 
 =head1 SYNOPSIS
 
-B<gnupod-otgsync.pl>
+B<gnupod-otgsync>
 
 =head1 DESCRIPTION
 

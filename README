@@ -9,19 +9,23 @@ of Perl5 + FireWire / USB2 Support)
 ## Installing GNUpod
 
 Running
+
 ```sh
 autoconf
 ./configure
 make install
 ```
+
 should be enough.
 
 ## Using GNUpod
 
 After installing GNUpod, you can use
+
 ```sh
 info gnupod
 ```
+
 to view GNUpod's info page.
 
 An HTML Version of the info-page is also
@@ -32,16 +36,16 @@ You should also read the FAQ
 ## GNUpod commands (cheatsheet)
 
 ```
-gnupod-init      init a new iPod (create empty Database + Directories)
-gnupod-addsong.pl   Add files
-gnupod-check.pl     Check for 'zombie' files
-gnupod-otgsync.pl   Handles On-The-Go Sync (not for humans)
-gnupod_search.pl    Search ;)
-mktunes.pl          Convert the GNUtunesDB.xml to a iTunesDB
-tunes2pod.pl        Convert the iTunesDB into a GNUtunesDB.xml
+gnupod-init         init a new iPod (create empty Database + Directories)
+gnupod-addsong      Add files
+gnupod-check        Check for 'zombie' files
+gnupod-otgsync      Handles On-The-Go Sync (not for humans)
+gnupod-search       Search ;)
+mktunes             Convert the GNUtunesDB.xml to a iTunesDB
+tunes2pod           Convert the iTunesDB into a GNUtunesDB.xml
 ```
 
-You'll have to use mktunes.pl if you added/deleted/changed something
+You'll have to use `mktunes` if you added/deleted/changed something
 on the iPod.
 
 ## Supported iPods

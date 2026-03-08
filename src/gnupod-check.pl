@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+
 use GNUpod::XMLhelper;
 use GNUpod::FooBar;
 use Getopt::Long;
@@ -33,7 +34,7 @@ use vars qw(%opts %TRACKER);
 #Get maximal Pathlength from XMLHelper constant
 my $xmlhelper_maxpathlen = GNUpod::XMLhelper::MAX_PATHLENGTH;
 
-print "gnupod-check.pl Version ###__VERSION__### (C) Adrian Ulrich\n";
+print "gnupod-check Version ###__VERSION__### (C) Adrian Ulrich\n";
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
@@ -107,7 +108,7 @@ sub go {
             print
 "    '$0 --fixit' to let me fix this errors. If it still doesn't help, run\n";
             print
-"    'gnupod-addsong.pl --restore'. This would wipe all your Playlists\n";
+"    'gnupod-addsong --restore'. This would wipe all your Playlists\n";
             print "    but would cure your iPod for sure.\n";
         }
     }
@@ -145,7 +146,7 @@ sub newfile {
     my $rp = GNUpod::XMLhelper::realpath( $opts{mount}, $el->{file}->{path} );
     my $id = $el->{file}->{id};
 
-    my $HINT = "Run 'gnupod-check.pl --fixit' to wipe this zombie";
+    my $HINT = "Run 'gnupod-check --fixit' to wipe this zombie";
 
     $TRACKER{SIZE} += int( $el->{file}->{filesize} );
     $TRACKER{TIME} += int( $el->{file}->{time} );
@@ -254,8 +255,8 @@ sub usage {
     my ($rtxt) = @_;
     die <<"EOF";
 $rtxt
-Usage: gnupod-check.pl [-h] [-m directory]
-gnupod-check.pl checks for 'lost' files
+Usage: gnupod-check [-h] [-m directory]
+gnupod-check checks for 'lost' files
 
    -h, --help              display this help and exit
        --version           output version information and exit
@@ -268,7 +269,7 @@ EOF
 
 sub version {
     die <<"EOF";
-gnupod-check.pl (gnupod) ###__VERSION__###
+gnupod-check (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2004
 
 This is free software; see the source for copying conditions.  There is NO
@@ -279,11 +280,11 @@ EOF
 
 =head1 NAME
 
-gnupod-check.pl - Check for lost/zombie files on the iPod
+gnupod-check - Check for lost/zombie files on the iPod
 
 =head1 SYNOPSIS
 
-B<gnupod-check.pl> [OPTION]...
+B<gnupod-check> [OPTION]...
 
 =head1 DESCRIPTION
 

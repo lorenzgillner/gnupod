@@ -1,6 +1,3 @@
-package GNUpod::SysInfo;
-#
-#
 #  Copyright (C) 2007 Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
@@ -19,8 +16,11 @@ package GNUpod::SysInfo;
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.#
 
-use strict;
-use warnings;
+package GNUpod::SysInfo;
+
+# use strict;
+# use warnings;
+
 use Config;
 use GNUpod::FooBar;
 

@@ -1,5 +1,3 @@
-package GNUpod::Hash58;
-#
 # Note: This is just a perl-version of hash58.cpp written by 'wtwb'
 #       URL: http://main.wtbw.co.uk/hash58.zip
 #
@@ -21,8 +19,11 @@ package GNUpod::Hash58;
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.#
 
-use strict;
-use warnings;
+package GNUpod::Hash58;
+
+# use strict;
+# use warnings;
+
 use Digest::SHA;
 
 use constant OFFSET_UNK30 => 0x30;    # Will set this to 1

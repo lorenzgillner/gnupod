@@ -1,5 +1,3 @@
-package GNUpod::ArtworkDB;
-
 #  Copyright (C) 2007 Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
@@ -22,17 +20,21 @@ package GNUpod::ArtworkDB;
 #
 # This product is not supported/written/published by Apple!
 
-use strict;
-use warnings;
+package GNUpod::ArtworkDB;
+
+# use strict;
+# use warnings;
+
 use GNUpod::iTunesDB;
 use Carp;
 use Digest::MD5;
 use Data::Dumper;
 
-use constant MAX_ITHMB_SIZE =>
-  268435456;    # Create new itumb file after reaching ~ 256 mb
-use constant SHARED_STORAGE => 1
-  ; # Share same offset across multiple items, this breaks iTunes but who cares?!
+# Create new itumb file after reaching ~ 256 mb
+use constant MAX_ITHMB_SIZE => 268435456;
+
+# Share same offset across multiple items, this breaks iTunes but who cares?!
+use constant SHARED_STORAGE => 1;
 
 use constant MODE_UNPARSED => 100;
 use constant MODE_PARSING  => 200;

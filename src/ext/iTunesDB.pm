@@ -26,8 +26,10 @@
 #
 
 package GNUpod::iTunesDB;
-use strict;
-use warnings;
+
+# use strict;
+# use warnings;
+
 use Unicode::String;
 use GNUpod::FooBar;
 use File::Glob ':glob';
@@ -1038,7 +1040,7 @@ sub __dummy_listview {
 
 ## END WRITE FUNCTIONS ##
 
-### Here are the READ sub's used by tunes2pod.pl
+### Here are the READ sub's used by tunes2pod
 
 ###########################################
 # Get a INT value

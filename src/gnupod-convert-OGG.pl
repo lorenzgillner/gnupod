@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+
 use GNUpod::FooBar;
 use GNUpod::FileMagic;
 
@@ -50,9 +51,9 @@ elsif ( $gimme eq "GET_META" ) {
     }
     ## 3. = no errors
     if ($@) {
-        warn "gnupod-convert-OGG.pl: Could not read OGG-Metadata from $file ("
+        warn "gnupod-convert-OGG: Could not read OGG-Metadata from $file ("
           . ref($ftag) . ")\n";
-        warn "gnupod-convert-OGG.pl: Maybe $ogg_pmod is not installed?\n";
+        warn "gnupod-convert-OGG: Maybe $ogg_pmod is not installed?\n";
         warn "Error: *$@*\n";
         exit(1);
     }
@@ -139,17 +140,17 @@ exit(0);
 
 =head1 NAME
 
-gnupod-convert-OGG.pl - Convert a file to an iPod supported format.
+gnupod-convert-OGG - Convert a file to an iPod supported format.
 
 =head1 SYNOPSIS
 
-B<gnupod-convert-OGG.pl> SOURCEFILE FORMATSELECTOR QUALITY
+B<gnupod-convert-OGG> SOURCEFILE FORMATSELECTOR QUALITY
 
 =head1 DESCRIPTION
 
-gnupod-convert-OGG.pl converts a media file to one of the formats
+gnupod-convert-OGG converts a media file to one of the formats
 that are supported by the iPod. This tool is not supposed to be called
-by the user directly but rather by gnupod-addsong.pl. Therefore this
+by the user directly but rather by gnupod-addsong. Therefore this
 documentation is rudimentary and will remain so.
 
 =head1 OPTIONS
@@ -182,7 +183,7 @@ C<< <http://lists.gnu.org/archive/html/bug-gnupod/> >>.
 
 =item *
 
-L<gnupod-addsong.pl> - Add songs, podcasts and books to your iPod.
+L<gnupod-addsong> - Add songs, podcasts and books to your iPod.
 
 =back
 

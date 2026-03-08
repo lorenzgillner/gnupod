@@ -1,5 +1,3 @@
-package GNUpod::XMLhelper;
-
 #  Copyright (C) 2002-2007 Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
@@ -22,8 +20,11 @@ package GNUpod::XMLhelper;
 #
 # This product is not supported/written/published by Apple!
 
-use strict;
-use warnings;
+package GNUpod::XMLhelper;
+
+# use strict;
+# use warnings;
+
 use XML::Parser;
 use Unicode::String;
 use GNUpod::FooBar;
@@ -232,7 +233,7 @@ sub mkfile {
 }
 
 ##############################################################
-# Add a playlist to output (Called by eventer or tunes2pod.pl)
+# Add a playlist to output (Called by eventer or tunes2pod)
 # This thing doesn't create xml-encoded output!
 sub addpl {
     my ( $name, $opt ) = @_;
@@ -252,7 +253,7 @@ sub addpl {
 }
 
 ##############################################################
-# Add a SmartPlaylist to output (Called by eventer or tunes2pod.pl)
+# Add a SmartPlaylist to output (Called by eventer or tunes2pod)
 # Like addpl(), 'output' isn't xml-encoded
 sub addspl {
     my ( $name, $opt ) = @_;

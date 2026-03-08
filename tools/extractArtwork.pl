@@ -110,7 +110,7 @@ sub usage {
     my ($rtxt) = @_;
     die <<"EOF";
 $rtxt
-Usage: extractArtwork.pl [-m directory] [-u] --outdir /path/to/outdir
+Usage: extractArtwork [-m directory] [-u] --outdir /path/to/outdir
 
    -h, --help              display this help and exit
    -u, --unique            Try to avoid exporting duplicate images.
@@ -127,7 +127,7 @@ EOF
 # Display version
 sub version {
     die <<"EOF";
-extractArtwork.pl (gnupod) 20080107
+extractArtwork (gnupod) 20080107
 Copyright (C) Adrian Ulrich 2008
 
 This is free software; see the source for copying conditions.  There is NO

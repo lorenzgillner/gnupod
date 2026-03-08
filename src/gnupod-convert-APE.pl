@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+
 use GNUpod::FooBar;
 use GNUpod::FileMagic;
 
@@ -104,17 +105,17 @@ exit(0);
 
 =head1 NAME
 
-gnupod-convert-APE.pl - Convert a file to an iPod supported format.
+gnupod-convert-APE - Convert a file to an iPod supported format.
 
 =head1 SYNOPSIS
 
-B<gnupod-convert-APE.pl> SOURCEFILE FORMATSELECTOR QUALITY
+B<gnupod-convert-APE> SOURCEFILE FORMATSELECTOR QUALITY
 
 =head1 DESCRIPTION
 
-gnupod-convert-APE.pl converts a media file to one of the formats
+gnupod-convert-APE converts a media file to one of the formats
 that are supported by the iPod. This tool is not supposed to be called
-by the user directly but rather by gnupod-addsong.pl. Therefore this
+by the user directly but rather by gnupod-addsong. Therefore this
 documentation is rudimentary and will remain so.
 
 =head1 OPTIONS
@@ -147,7 +148,7 @@ C<< <http://lists.gnu.org/archive/html/bug-gnupod/> >>.
 
 =item *
 
-L<gnupod-addsong.pl> - Add songs, podcasts and books to your iPod.
+L<gnupod-addsong> - Add songs, podcasts and books to your iPod.
 
 =back
 

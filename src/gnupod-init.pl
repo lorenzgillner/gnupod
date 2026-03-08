@@ -123,15 +123,15 @@ EOF
     my $t2pfail = 0;
     if ( -e $con->{itunesdb} && !$opts{'disable-convert'} ) {
 
-        #We have an iTunesDB, call tunes2pod.pl
-        print "Found *existing* iTunesDB, running tunes2pod.pl\n";
-        $t2pfail = system( "$con->{bindir}/tunes2pod.pl", "--force", "-m",
+        #We have an iTunesDB, call tunes2pod
+        print "Found *existing* iTunesDB, running tunes2pod\n";
+        $t2pfail = system( "$con->{bindir}/tunes2pod", "--force", "-m",
             $opts{mount} );
     }
     else {
-        #No iTunesDB, run mktunes.pl
-        print "No iTunesDB found, running mktunes.pl\n";
-        my @mktunescmd = ( "$con->{bindir}/mktunes.pl", "-m", "$opts{mount}" );
+        #No iTunesDB, run mktunes
+        print "No iTunesDB found, running mktunes\n";
+        my @mktunescmd = ( "$con->{bindir}/mktunes", "-m", "$opts{mount}" );
         if ( $opts{'fwguid'} ) { push @mktunescmd, "-g", "$opts{fwguid}"; }
         $t2pfail = system(@mktunescmd);
     }
@@ -157,12 +157,12 @@ Usage: gnupod-init [-h] [-m directory]
        --version           output version information and exit
    -m, --mount=directory   iPod mountpoint, default is \$IPOD_MOUNTPOINT
    -d, --disable-convert   Don't try to convert an existing iTunesDB
-   -g, --fwguid=HEXVAL     FirewireGuid / Serial of connected iPod (passed to mktunes.pl)
+   -g, --fwguid=HEXVAL     FirewireGuid / Serial of connected iPod (passed to mktunes)
    -f, --france            Limit volume to 100dB (For French-Law/People)
                            Maximal-volume without this is ~104dB (VERY LOUD)
                            *WARNING* This works only for iPods running
                            Firmware 1.x (1st & 2nd generation)
-                           You can also use mktunes.pl '--volume PERCENT'
+                           You can also use mktunes '--volume PERCENT'
                            to adjust the volume (Works with Firmware 1.x AND 2.x)
        --noask             Do not wait for any user input
 
@@ -193,8 +193,8 @@ B<gnupod-init> [OPTION]...
 
 gnupod-init prepares a 'virgin' iPod for GNUpod by creating missing
 directories that your iPod needs, translating an existing
-iTunesDB (via L<tunes2pod.pl>) to a L<GNUtunes.xml> and/or creating
-a missing iTunesDB (via L<mktunes.pl>).
+iTunesDB (via L<tunes2pod>) to a L<GNUtunes.xml> and/or creating
+a missing iTunesDB (via L<mktunes>).
 
 =head1 OPTIONS
 
@@ -218,8 +218,8 @@ Don't try to convert an existing iTunesDB
 
 =item -g, --fwguid=HEXVAL
 
-FirewireGuid of connected iPod (passed to mktunes.pl).
-See L<mktunes.pl> for details.
+FirewireGuid of connected iPod (passed to mktunes).
+See L<mktunes> for details.
 
 =item -f, --france
 
@@ -228,7 +228,7 @@ Limit volume to 100dB (For French-Law/People)
 Maximal-volume without this is ~104dB (VERY LOUD)
 
 B<WARNING> This works only for iPods running Firmware 1.x (1st & 2nd generation).
-You can also use mktunes.pl '--volume PERCENT' to adjust the volume (Works with Firmware 1.x AND 2.x)
+You can also use mktunes '--volume PERCENT' to adjust the volume (Works with Firmware 1.x AND 2.x)
 
 =item     --noask
 

@@ -161,7 +161,7 @@ sub is_FW {
 sub usage {
     die <<"EOF";
 
-fwpatch.pl 0.4 - (C) Adrian Ulrich
+fwpatch 0.4 - (C) Adrian Ulrich
 
 Idea and \@TOSEEK stolen from
 goPod : http://gopod.free-go.net, written by  JiB, kang & Alf
@@ -175,7 +175,7 @@ Commands:
  <FIRMWARE> EU  : Patch <FIRMWARE> into EU mode (= Low volume)
  <FIRMWARE> INT : Patch <FIRMWARE> into International mode (= No limit :) )
 
-**NOTE** fwpatch.pl writes to <FIRMWARE>, create a backup if you don't
+**NOTE** fwpatch writes to <FIRMWARE>, create a backup if you don't
          like this! You've been warned!
          <FIRMWARE> can also be an iPod FW-Partition (= first partition for FAT iPods)
          Examples

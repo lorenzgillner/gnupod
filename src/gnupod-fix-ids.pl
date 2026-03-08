@@ -7,7 +7,7 @@ use warnings;
 use GNUpod::XMLhelper;
 use Getopt::Long;
 
-my $programName = "gnupod-fix-ids.pl";
+my $programName = "gnupod-fix-ids";
 
 my $fullversionstring = "$programName Version ###__VERSION__###";
 

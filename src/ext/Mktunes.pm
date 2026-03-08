@@ -1,11 +1,14 @@
 package GNUpod::Mktunes;
+
 use GNUpod::iTunesDB;
+
 use constant MODE_ADDFILE      => 1;
 use constant MODE_ADDPL        => 2;
 use constant PLAYLIST_HIDDEN   => 1;
 use constant PLAYLIST_VISIBLE  => 0;
 use constant MPL_UID           => 1234567890;
 use constant IPODNAME_FALLBACK => "GNUpod ###__VERSION__###";
+
 #########################################################################
 # Creats a new mktunes object
 sub new {
@@ -497,7 +500,7 @@ sub AddSmartPlaylistItem {
 
     unless ( GNUpod::XMLhelper::get_splpref($name)->{liveupdate} ) {
         warn
-"mktunes.pl: warning: (pl: $name) Liveupdate disabled. Please set liveupdate=\"1\" if you don't want an empty playlist\n";
+"mktunes: warning: (pl: $name) Liveupdate disabled. Please set liveupdate=\"1\" if you don't want an empty playlist\n";
     }
 
     if ( my $id = $item->{splcont}->{id} )

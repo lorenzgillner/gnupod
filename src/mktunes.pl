@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+
 use GNUpod::XMLhelper;
 use GNUpod::FooBar;
 use GNUpod::Mktunes;
@@ -36,7 +37,7 @@ $| = 1;
 my $mktunes = undef;
 my %opts    = ();
 
-print "mktunes.pl ###__VERSION__### (C) Adrian Ulrich\n";
+print "mktunes ###__VERSION__### (C) Adrian Ulrich\n";
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 GetOptions( \%opts, "version", "help|h", "ipod-name|n=s", "mount|m=s",
@@ -185,7 +186,7 @@ sub usage {
     my ($rtxt) = @_;
     die <<"EOF";
 $rtxt
-Usage: mktunes.pl [-h] [-m directory] [-v VALUE]
+Usage: mktunes [-h] [-m directory] [-v VALUE]
 
    -h, --help              display this help and exit
        --version           output version information and exit
@@ -204,7 +205,7 @@ EOF
 # Displays current version
 sub version {
     die <<"EOF";
-mktunes.pl (gnupod) ###__VERSION__###
+mktunes (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2007
 
 This is free software; see the source for copying conditions.  There is NO
@@ -215,23 +216,23 @@ EOF
 
 =head1 NAME
 
-mktunes.pl - Create an iTunesDB.
+mktunes - Create an iTunesDB.
 
 =head1 SYNOPSIS
 
-B<mktunes.pl> [OPTION]...
+B<mktunes> [OPTION]...
 
 =head1 DESCRIPTION
 
 Convert GNUpod's GNUtunesDB.xml into iTunesDB format. The iPod will read all
 information about the available songs and playlists from the iTunesDB file.
-So it is essential that you run mktunes.pl after adding changing or removing
+So it is essential that you run mktunes after adding changing or removing
 songs/playlists. Also other software like gtkpod will read (and write) the
 iTunesDB file to find out what's on your iPod.
 
 Note: The iPod shuffle models will read a file called 'iTunesSD' which differs
 in format and usually contains a lot less information than the iTunesDB file.
-mktunes.pl will also create the iTunesSD file.
+mktunes will also create the iTunesSD file.
 
 =head1 OPTIONS
 
@@ -280,24 +281,24 @@ GNU/Linux (via `/sbin/udevadm info') and Solaris (via `prtconf -v').
 If GNUpod somehow fails to find the correct
 fwguid/serial number of your iPod (as it can with recent versions of Ubuntu)
 you'll have to specify the correct value using the `--fwguid' switch of
-`mktunes.pl'.
+`mktunes'.
 
 =back
 
 =head1 TROUBLESHOOTING
 
-=head2 mktunes.pl failed
+=head2 mktunes failed
 
-If C<mktunes.pl> fails (perhaps you hit ctrl-c because it was taking too
+If C<mktunes> fails (perhaps you hit ctrl-c because it was taking too
 long) then the iTunes database may be left corrupted.  If you unmount at
 this point, your iPod may appear to have no files at all.
 
-If you are using Ubuntu 9.04 or above, and you found C<mktunes.pl> was
+If you are using Ubuntu 9.04 or above, and you found C<mktunes> was
 taking too long, you can either tell GNUpod your iPod's ID directly:
 
-	mktunes.pl -m /mnt/ipod --fwguid 0123456789abc...
+	mktunes -m /mnt/ipod --fwguid 0123456789abc...
 
-or upgrade your version of the GNUpod tools in order for C<mktunes.pl> to work again.
+or upgrade your version of the GNUpod tools in order for C<mktunes> to work again.
 You can do that with the following commands:
 
 	sudo su -
@@ -310,7 +311,7 @@ You can do that with the following commands:
 	./configure
 	make install
 
-In any case, remount your iPod, run C<mktunes.pl> again and unmount.  That
+In any case, remount your iPod, run C<mktunes> again and unmount.  That
 should fix the problem.
 
 ###___PODINSERT man/general-tools.pod___###

@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+
 use GNUpod::XMLhelper;
 use GNUpod::FooBar;
 use GNUpod::FileMagic;
@@ -937,9 +938,7 @@ sub handle_int {
 ###############################################################
 # Basic help
 sub usage {
-    my ($rtxt) = @_;
     die <<"EOF";
-$rtxt
 Usage: gnupod-addsong [-h] [-m directory] File1 File2 ...
 
    -h, --help                       display this help and exit
@@ -998,7 +997,7 @@ EOF
 
 =head1 NAME
 
-gnupod-addsong  - Adds files to the iPod
+gnupod-addsong - Adds files to the iPod
 
 =head1 SYNOPSIS
 

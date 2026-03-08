@@ -1,5 +1,3 @@
-package GNUpod::QTfile;
-
 #  Copyright (C) 2003-2007 Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
@@ -27,10 +25,12 @@ package GNUpod::QTfile;
 #
 # Note: I didn't read/have any specs...
 # It's written using 'try and error'
-#
 
-use strict;
-use warnings;
+package GNUpod::QTfile;
+
+# use strict;
+# use warnings;
+
 use GNUpod::FooBar;
 use vars qw(%hchild %reth @LEVELA);
 

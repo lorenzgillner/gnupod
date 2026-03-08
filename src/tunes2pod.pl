@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+
 use GNUpod::iTunesDB;
 use GNUpod::XMLhelper;
 use GNUpod::FooBar;
@@ -41,7 +42,7 @@ $| = 1;
 my $xml_files_parsed = 0;
 my $gtdb             = {};
 
-print "tunes2pod.pl Version ###__VERSION__### (C) Adrian Ulrich\n";
+print "tunes2pod Version ###__VERSION__### (C) Adrian Ulrich\n";
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
@@ -63,7 +64,7 @@ sub convert {
     #We disabled all autosyncing (_no_sync set to 1), so we do a test
     #ourself
     if ( !$opts{force} && !( GNUpod::FooBar::ItunesDBNeedsSync($con) ) ) {
-        print "I don't think that you have to run tunes2pod.pl\n";
+        print "I don't think that you have to run tunes2pod\n";
         print "The GNUtunesDB looks up-to-date\n";
         print "\n";
         print "If you think i'm wrong, use '$0 --force'\n";
@@ -467,7 +468,7 @@ sub usage {
     my ($rtxt) = @_;
     die <<"EOF";
 $rtxt
-Usage: tunes2pod.pl [-h] [-m directory]
+Usage: tunes2pod [-h] [-m directory]
 
    -h, --help              display this help and exit
        --version           output version information and exit
@@ -480,7 +481,7 @@ EOF
 
 sub version {
     die <<"EOF";
-tunes2pod.pl (gnupod) ###__VERSION__###
+tunes2pod (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2007
 
 This is free software; see the source for copying conditions.  There is NO
@@ -491,11 +492,11 @@ EOF
 
 =head1 NAME
 
-tunes2pod.pl - Convert an iTunesDB into XML (aka GNUtunesDB.xml)
+tunes2pod - Convert an iTunesDB into XML (aka GNUtunesDB.xml)
 
 =head1 SYNOPSIS
 
-B<tunes2pod.pl> [OPTION]...
+B<tunes2pod> [OPTION]...
 
 =head1 DESCRIPTION
 
@@ -523,7 +524,7 @@ iPod mountpoint, default is C<$IPOD_MOUNTPOINT>
 
 =item     --force
 
-Disable 'sync' checking. tunes2pod.pl may do stupid things :)
+Disable 'sync' checking. tunes2pod may do stupid things :)
 
 =back
 

@@ -36,7 +36,7 @@ die
 if ( $opts{MODE} eq "INSTALL" ) {
     # ok, we are still alive, let's blow up the system ;)
     print "Installing GNUpod $VERSION using gnupod-install\n";
-    install_bin( "build/bin/*.pl", $DST . $opts{bindir} );
+    install_bin( "build/bin/*", $DST . $opts{bindir} );
     install_pm( "build/bin/GNUpod", "GNUpod", $DST . $pmdir );
     install_man( "build/man/*.gz", $DST . $opts{mandir} . "/man1" );
     install_info( "build/info/gnupod.info", $DST . $opts{infodir} );
@@ -44,14 +44,14 @@ if ( $opts{MODE} eq "INSTALL" ) {
 }
 elsif ( $opts{MODE} eq "BUILD" ) {
     print "Building GNUpod $VERSION...\n";
-    install_scripts( "src/*.pl",     "build/bin" );
+    install_scripts( "src/*",     "build/bin" );
     install_scripts( "src/ext/*.pm", "build/bin/GNUpod" );
-    extract_man( "build/bin/*.pl", "build/man" );
+    extract_man( "build/bin/*", "build/man" );
     install_scripts( "doc/gnupod.info", "build/info" );
 }
 elsif ( $opts{MODE} eq "REMOVE" ) {
     print "Removing GNUpod $VERSION...\n";
-    remove_scripts( "build/bin/*.pl", $opts{bindir} );
+    remove_scripts( "build/bin/*", $opts{bindir} );
     remove_pm( "build/bin/GNUpod/*.pm", "GNUpod", $pmdir );
     remove_mandocs( "build/man/*.gz", $opts{mandir} . "/man1" );
     remove_docs( "gnupod", $opts{infodir} );
@@ -269,11 +269,11 @@ sub fof {
     return $dull[ int(@dull) - 1 ];
 }
 
-sub stripext {
-    my ($file) = @_;
-    $file =~ s/\..*$//;
-    return $file;
-}
+# sub stripext {
+#     my ($file) = @_;
+#     $file =~ s/\..*$//;
+#     return $file;
+# }
 
 sub _recmkdir {
     my ($dir) = @_;

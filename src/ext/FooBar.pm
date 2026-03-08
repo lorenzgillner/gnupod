@@ -1,5 +1,3 @@
-package GNUpod::FooBar;
-
 #  Copyright (C) 2002-2007 Adrian Ulrich <pab at blinkenlights.ch>
 #  Part of the gnupod-tools collection
 #
@@ -22,8 +20,11 @@ package GNUpod::FooBar;
 #
 # This product is not supported/written/published by Apple!
 
-use strict;
-use warnings;
+package GNUpod::FooBar;
+
+# use strict;
+# use warnings;
+
 use Digest::MD5;
 use File::Glob ':glob';
 use GNUpod::iTunesDB;
@@ -139,10 +140,10 @@ sub _check_casesensitive {
 }
 
 #######################################################################
-# Call mktunes.pl
+# Call mktunes
 sub StartAutoMkTunes {
     my ($con) = @_;
-    my $XBIN = "$con->{bindir}/mktunes.pl";
+    my $XBIN = "$con->{bindir}/mktunes";
     if ( -x $XBIN ) {
         {
             local $ENV{IPOD_MOUNTPOINT} = $con->{mountpoint};
@@ -164,7 +165,7 @@ sub StartAutoMkTunes {
 sub StartItunesDBSync {
     my ($con) = @_;
 
-    my $XBIN = "$con->{bindir}/tunes2pod.pl";
+    my $XBIN = "$con->{bindir}/tunes2pod";
 
     if ( -x $XBIN ) {
         {
@@ -186,11 +187,11 @@ sub StartItunesDBSync {
 }
 
 ######################################################################
-# Call gnupod-otgsync.pl
+# Call gnupod-otgsync
 sub StartOnTheGoSync {
     my ($con) = @_;
 
-    my $XBIN = "$con->{bindir}/gnupod-otgsync.pl";
+    my $XBIN = "$con->{bindir}/gnupod-otgsync";
 
     if ( -x $XBIN ) {
         {

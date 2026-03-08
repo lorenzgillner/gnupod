@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+
 use GNUpod::XMLhelper;
 use GNUpod::FooBar;
 use GNUpod::ArtworkDB;
@@ -37,7 +38,7 @@ my $dirty = 0;        # Do we need to re-write the XML version?
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
-print "gnupod-search.pl Version ###__VERSION__### (C) Adrian Ulrich\n";
+print "gnupod-search Version ###__VERSION__### (C) Adrian Ulrich\n";
 
 # WARNING: If you add new options wich don't do matching, change newfile()
 #
@@ -316,7 +317,7 @@ sub usage {
     my ($rtxt) = @_;
     die <<"EOF";
 $rtxt
-Usage: gnupod-search.pl [-h] [-m directory] File1 File2 ...
+Usage: gnupod-search [-h] [-m directory] File1 File2 ...
 
    -h, --help              display this help and exit
        --version           output version information and exit
@@ -339,7 +340,7 @@ Usage: gnupod-search.pl [-h] [-m directory] File1 File2 ...
                             u = UnixPath n = Songnum  G = podcastguid R = podcastrss
                             d = dbid
        --rename=KEY=VAL    Change tags on found songs. Example: --rename="ARTIST=Foo Bar"
-       --artwork=FILE      Set FILE as Cover for found files, do not forget to run mktunes.pl
+       --artwork=FILE      Set FILE as Cover for found files, do not forget to run mktunes
 
 Note: * Argument for title/artist/album/etc has to be UTF8 encoded, *not* latin1!
       * Use '>3' to search all values above 3, use '<3' to search for values below 3
@@ -353,7 +354,7 @@ EOF
 
 sub version {
     die <<"EOF";
-gnupod-search.pl (gnupod) ###__VERSION__###
+gnupod-search (gnupod) ###__VERSION__###
 Copyright (C) Adrian Ulrich 2002-2008
 
 This is free software; see the source for copying conditions.  There is NO
@@ -364,15 +365,15 @@ EOF
 
 =head1 NAME
 
-gnupod-search.pl  - Search, list, edit, delete songs from your iPod
+gnupod-search  - Search, list, edit, delete songs from your iPod
 
 =head1 SYNOPSIS
 
-	gnupod-search.pl [OPTION] File1 File2 ...
+	gnupod-search [OPTION] File1 File2 ...
 
 =head1 DESCRIPTION
 
-C<gnupod-search.pl> searches the F<GNUtunesDB.xml> file for matches to its
+C<gnupod-search> searches the F<GNUtunesDB.xml> file for matches to its
 arguments.  These search results can then be changed (via C<--rename>) or
 deleted (via C<--delete>).  For these changes to be visible to the iPod,
 C<mktunes> must be run.
@@ -453,11 +454,11 @@ Search doesn't need to match multiple times, even though there is more than
 one match criteria.  Essentially changes the search from using I<and> to
 I<or>.  For example:
 
-	gnupod-search.pl -m /mnt/ipod --rating="60-100" --artist="Amos"
+	gnupod-search -m /mnt/ipod --rating="60-100" --artist="Amos"
 
 matches all songs by "Amos" which have a rating of 3-5 stars.  Whereas
 
-	gnupod-search.pl -m /mnt/ipod --rating="60-100" --artist="Amos" --match-once
+	gnupod-search -m /mnt/ipod --rating="60-100" --artist="Amos" --match-once
 
 matches all songs by "Amos" and all songs which have a rating of 3-5 stars.
 
@@ -474,7 +475,7 @@ Modify how the search results are displayed.  default=ialt  Options are:
 
 =head2 Changing song information
 
-After you have finished making changes, you must remember to call C<mktunes.pl>
+After you have finished making changes, you must remember to call C<mktunes>
 to ensure those changes are written to the iTunes database and are visible to
 your iPod.
 
@@ -505,7 +506,7 @@ C<model = nano_4g> for late 2008 nano models.
 =item --delete
 
 REMOVE (!) matched songs.  This removes the songs immediately, but you'll
-still have to call C<mktunes.pl> to make the appropriate changes to the
+still have to call C<mktunes> to make the appropriate changes to the
 iTunes database.
 
 =back
@@ -513,12 +514,12 @@ iTunes database.
 =head1 EDITING GNUtunesDB.xml DIRECTLY
 
 It is possible to perform most of the changes you might perform with
-C<gnupod-search.pl> directly into the
+C<gnupod-search> directly into the
 F<iPod_Control/.gnupod/GNUtunesDB.xml> file.  It is recommended that if you
 intend to do this, that you take a backup of the file first.
 
 B<IMPORTANT>: After making any changes to the F<GNUtunesDB.xml> (whether
-directly) or vial C<gnupod-search.pl> you must call C<mktunes.pl> to ensure
+directly) or vial C<gnupod-search> you must call C<mktunes> to ensure
 those changes are also reflected in the iTunes database.
 
 =head1 EXAMPLES
@@ -528,33 +529,33 @@ those changes are also reflected in the iTunes database.
 
 	# Sync changes made by other tools (such as iTunes)
 	# only necessary if you are using other tools in addition to these
-	tunes2pod.pl -m /mnt/ipod
+	tunes2pod -m /mnt/ipod
 
 	# search for all songs by the artist called 'Schlummiguch'
-	gnupod-search.pl -m /mnt/ipod --artist="Schlummiguch"
+	gnupod-search -m /mnt/ipod --artist="Schlummiguch"
 
 	# search for all songs in the album 'Seiken Densetsu'
-	gnupod-search.pl -m /mnt/ipod --album="Seiken Densetsu"
+	gnupod-search -m /mnt/ipod --album="Seiken Densetsu"
 
 	# search for all songs whose ids contain the number 4
-	gnupod-search.pl -m /mnt/ipod --id=4
+	gnupod-search -m /mnt/ipod --id=4
 
 	# search for the songs with id 4 (it's a regular expression)
-	gnupod-search.pl -m /mnt/ipod --id="^4$"
+	gnupod-search -m /mnt/ipod --id="^4$"
 
 	# search for all the songs whose rating is 3 - 5 stars and whose
 	# Artist contains "Amos"
-	gnupod-search.pl -m /mnt/ipod --rating="60-100" --artist="Amos"
+	gnupod-search -m /mnt/ipod --rating="60-100" --artist="Amos"
 
 	# search for all the songs whose play count is less than 3
-	gnupod-search.pl -m /mnt/ipod --playcount<3
+	gnupod-search -m /mnt/ipod --playcount<3
 
 	# Change artist and rating for all songs by Alfred Neumann
 	# Sets artist to "John Doe" and rating to 5 stars (5 x 20 = 100)
-	gnupod-search.pl --artist="Alfred Neumann" --rename="artist=John Doe" --rename="rating=100"
+	gnupod-search --artist="Alfred Neumann" --rename="artist=John Doe" --rename="rating=100"
 
 	# Set cover-artwork for all songs by "Amos" to be "amos.jpg"
-	gnupod-search.pl --artist="Amos" --artwork="amos.jpg"
+	gnupod-search --artist="Amos" --artwork="amos.jpg"
 
 	# Boost the volume for all the songs on album by 50%
 	gnupod-search --album="Seiken Densetsu" --rename="volume=50"
@@ -563,10 +564,10 @@ those changes are also reflected in the iTunes database.
 	gnupod-search --album="Seiken Densetsu" --rename="volume=-10"
 
 	# Delete all songs by the artist called 'Schlumminguch'
-	gnupod-search.pl -m /mnt/ipod --artist="Schlummiguch" --delete
+	gnupod-search -m /mnt/ipod --artist="Schlummiguch" --delete
 
 	# Record the changes to the iTunes database (this is essential)
-	mktunes.pl -m /mnt/ipod
+	mktunes -m /mnt/ipod
 
 	# Unmount and go
 	umount /mnt/ipod
