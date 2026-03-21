@@ -32,22 +32,20 @@ use Getopt::Long;
 use vars qw(%opts @keeplist %rename_tags);
 
 use constant DEFAULT_SPACE => 32;
+use constant DEFAULT_SEPARATOR => '|';
 
 my $dbid  = undef;    # Artwork DB-ID
 my $dirty = 0;        # Do we need to re-write the XML version?
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
-print "gnupod-search Version ###__VERSION__### (C) Adrian Ulrich\n";
-
-# WARNING: If you add new options wich don't do matching, change newfile()
-#
+# WARNING: If you add new options which don't do matching, change newfile()
 GetOptions(
     \%opts,           "version",         "help|h",        "mount|m=s",
     "artist|a=s",     "album|l=s",       "title|t=s",     "id|i=s",
     "rename=s@",      "artwork=s",       "playcount|c=s", "rating|s=s",
     "podcastrss|R=s", "podcastguid|U=s", "bitrate|b=s",   "view=s",
-    "genre|g=s",      "match-once|o",    "delete"
+    "separator=s",    "genre|g=s",       "match-once|o",  "delete"
 );
 GNUpod::FooBar::GetConfig(
     \%opts,
@@ -62,7 +60,8 @@ GNUpod::FooBar::GetConfig(
     "gnupod-search"
 );
 
-$opts{view} ||= 'ialt';    #Default view
+$opts{view} ||= 'ialt';   # Default view
+$opts{separator} ||= DEFAULT_SEPARATOR; # Default separator
 
 usage()   if $opts{help};
 version() if $opts{version};
@@ -111,7 +110,9 @@ sub main {
         }
     }
 
+    # Default view
     pview( undef, 1 );
+
     GNUpod::XMLhelper::doxml( $con->{xml} )
       or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
 
@@ -129,9 +130,9 @@ sub main {
 sub newfile {
     my ($el) = @_;
 
-    # 2 = mount + view (both are ALWAYS set)
+    # 2 = mount + view + delimiter (both are ALWAYS set)
     my $ntm =
-      keys(%opts) - 2 -
+      keys(%opts) - 3 -
       ( defined $opts{'match-once'} ) -
       ( defined $opts{'automktunes'} ) -
       ( defined $opts{'delete'} ) -
@@ -143,7 +144,7 @@ sub newfile {
     foreach my $opx ( keys(%opts) ) {
         next
           if $opx =~
-          /mount|match-once|delete|view|rename|artwork|model/;    #Skip this
+          /mount|match-once|delete|view|separator|rename|artwork|model/; # Skip this
 
         if ( substr( $opts{$opx}, 0, 1 ) eq '>' ) {
             $matched++
@@ -245,7 +246,7 @@ sub newpl {
 sub pview {
     my ( $orf, $xhead, $xdelete ) = @_;
 
-    #Build refs
+    # Build refs
     my %qh = ();
     $qh{n}{k} = $orf->{songnum};
     $qh{n}{w} = 4;
@@ -284,25 +285,31 @@ sub pview {
     $qh{u}{w} = 96;
     $qh{u}{s} = "UNIXPATH";
 
-    #Prepare view
+    my $csv = ( $opts{separator} ne DEFAULT_SEPARATOR );
 
-    my $ll = 0;    #LineLength
+    # Prepare view
+    my $linelength = 0;
     foreach ( split( //, $opts{view} ) ) {
-        print "|" if $ll;
-        my $cs = defined( $qh{$_}{k} ) ? $qh{$_}{k} : '';    #CurrentString
-        $cs = $qh{$_}{s} if $xhead;    #Replace it if HEAD is needed
+        print $opts{separator} if $linelength;
 
-        my $cl = $qh{$_}{w} || DEFAULT_SPACE;    #Current length
-        $ll += $cl + 1;                          #Incrase LineLength
-        printf( "%-*s", $cl, $cs );
+        my $currentstring = defined( $qh{$_}{k} ) ? $qh{$_}{k} : '';
+        $currentstring = $qh{$_}{s} if $xhead; # Replace it if HEAD is needed
+        my $currentlength = $qh{$_}{w} || DEFAULT_SPACE;
+
+        if ( $csv ) {
+            $currentlength = length($currentstring);
+        }
+
+        $linelength += $currentlength + length($opts{separator}); # Incrase LineLength
+        printf( "%-*s", $currentlength, $currentstring );
     }
 
     if ( $xdelete && !$xhead ) {
         print " [RM]\n";
     }
-    elsif ($xhead) {
+    elsif ($xhead && !$csv) {
         print "\n";
-        print "=" x $ll;
+        print "=" x $linelength;
         print "\n";
     }
     else {
@@ -339,6 +346,7 @@ Usage: gnupod-search [-h] [-m directory] File1 File2 ...
                             l = album    g = genre    c = playcount   i = id
                             u = UnixPath n = Songnum  G = podcastguid R = podcastrss
                             d = dbid
+       --separator=CHAR    Override tabular formatting and use CHAR as field separator
        --rename=KEY=VAL    Change tags on found songs. Example: --rename="ARTIST=Foo Bar"
        --artwork=FILE      Set FILE as Cover for found files, do not forget to run mktunes
 

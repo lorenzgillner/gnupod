@@ -269,11 +269,11 @@ sub fof {
     return $dull[ int(@dull) - 1 ];
 }
 
-# sub stripext {
-#     my ($file) = @_;
-#     $file =~ s/\..*$//;
-#     return $file;
-# }
+sub stripext {
+    my ($file) = @_;
+    $file =~ s/\..*$//;
+    return $file;
+}
 
 sub _recmkdir {
     my ($dir) = @_;

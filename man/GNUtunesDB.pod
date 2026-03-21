@@ -26,7 +26,7 @@ and a number of playlists.
 
 =head1 SAMPLE SONG
 
-A sample entry for a song added with C<gnupod-addsong.pl> should look much
+A sample entry for a song added with C<gnupod-addsong> should look much
 like the below.
 
 	<file addtime="3320718442" album="Jagged Little Pill" artist="Alanis Morissette" 
@@ -257,7 +257,7 @@ Year of track release if known, else 0.
 
 =head1 SAMPLE PODCAST
 
-A sample entry for a podcast correctly added with C<gnupod-addsong.pl>
+A sample entry for a podcast correctly added with C<gnupod-addsong>
 should look much like the below.
 
 	<file addtime="3320746257" album="dancarlin.com" artist="Dan
