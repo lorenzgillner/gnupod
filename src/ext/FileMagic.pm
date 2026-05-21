@@ -118,7 +118,7 @@ sub wtf_is {
     elsif ( my $nnat = __is_NonNative( $file, $flags, $con ) ) {  # Handle non-native formats
         return ( $nnat->{ref}, { ftyp => $nnat->{codec} }, $nnat->{encoder} );
     }
-    elsif ( my $xqt = __is_qt( $file, $flags ) ) {
+    elsif ( my $xqt = __is_qt( $file, $flags ) ) { # TODO This fails for some reason
         return (
             $xqt->{ref},
             {
@@ -128,14 +128,14 @@ sub wtf_is {
             }
         );
     }
-    elsif ( my $h = __is_pcm( $file, $flags ) ) {
-        return ( $h, { ftyp => "PCM", format => "wav" } );
+    elsif ( my $pcm = __is_pcm( $file, $flags ) ) {
+        return ( $pcm, { ftyp => "PCM", format => "wav" } );
     }
-    elsif ( my $k = __is_mp3( $file, $flags ) ) {
-        return ( $k, { ftyp => "MP3", format => "mp3" } );
+    elsif ( my $mp3 = __is_mp3( $file, $flags ) ) {
+        return ( $mp3, { ftyp => "MP3", format => "mp3" } );
     }
 
-    # Still no luck..
+    # Still no luck; give up
     return ( undef, undef, undef );
 }
 
@@ -174,7 +174,7 @@ sub __is_NonNative {
     close(TNN);
 
     my $encoder = $NN_HEADERS->{$magic}->{encoder};
-    return undef unless $encoder;    # No encoder -> Not supported magic
+    return undef unless $encoder; # No encoder -> Not supported magic
 
     if ( defined( $NN_HEADERS->{$magic}->{magic2} )
         && $magic2 ne $NN_HEADERS->{$magic}->{magic2} )
@@ -200,7 +200,7 @@ sub __is_NonNative {
     $rh{title}   = getutf8( $metastuff->{_TITLE}  || $cf || "Unknown Title" );
     $rh{genre}   = getutf8( $metastuff->{_GENRE}  || "" );
     $rh{songs}   = int( $songa[1] );
-    $rh{songnum} = int( $songa[0] );
+    $rh{number} = int( $songa[0] );
     $rh{comment} =
       getutf8( $metastuff->{_COMMENT} || $metastuff->{FORMAT} . " file" );
     $rh{fdesc} = getutf8( $metastuff->{_VENDOR} || "Converted using $encoder" );
@@ -229,7 +229,7 @@ Returns undef if FILE is no QT file. Otherwise returns a hash with:
 sub __is_qt {
     my ($file) = @_;
     my $ret = GNUpod::QTfile::parsefile($file);
-    return undef unless $ret;    #No QT file
+    return undef unless $ret; # No QT file
 
     my %rh = ();
     if ( $ret->{time} < 1 ) {
@@ -241,7 +241,7 @@ sub __is_qt {
 
     my $cf = ( ( split( /\//, $file ) )[-1] );
     $rh{songs}    = int( $ret->{tracks} );
-    $rh{songnum}  = int( $ret->{tracknum} );
+    $rh{number}  = int( $ret->{tracknum} );
     $rh{cds}      = int( $ret->{cds} );
     $rh{cdnum}    = int( $ret->{cdnum} );
     $rh{srate}    = int( $ret->{srate} );
@@ -550,7 +550,7 @@ sub __is_mp3 {
     $rgtag = "REPLAYGAIN_ALBUM_GAIN" if ( $flags->{'rgalbum'} );
 
     $rh{songs}   = int( $songa[1] );
-    $rh{songnum} = int( $songa[0] );
+    $rh{number} = int( $songa[0] );
     $rh{cdnum}   = int( $cda[0] );
     $rh{cds}     = int( $cda[1] );
     $rh{year}    = ( $hs->{TYER} || $hs->{TYE} || $h->{YEAR} || 0 );

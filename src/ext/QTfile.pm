@@ -75,24 +75,24 @@ $hchild{'trkn'} = 8;
 $hchild{'tmpo'} = 8;
 $hchild{'disk'} = 8;
 
-##Call this to parse a file
+# Call this to parse a file
 sub parsefile {
     my ($qtfile) = @_;
 
     open( QTFILE, $qtfile ) or return undef;
     binmode(QTFILE);
 
-    my $fsize = -s "$qtfile" or return undef;          #Dunno parse emtpy files
+    my $fsize = -s "$qtfile" or return undef;          # Dunno parse emtpy files
     my $pos   = 0;
     my $level = 1;
     my %lx    = ();
-    %reth = ();                                        #Cleanup
-    if ( $fsize < 16 || rseek( 4, 4 ) ne "ftyp" ) {    #Can't be a QTfile
+    %reth = ();                                        # Cleanup
+    if ( $fsize < 16 || rseek( 4, 4 ) ne "ftyp" ) {    # Can't be a QTfile
         close(QTFILE);
         return undef;
     }
 
-    #Ok, header looks okay.. seek each atom and buildup $lx{metadat}
+    # Ok, header looks okay ... seek each atom and buildup $lx{metadat}
     while ( $pos < $fsize ) {
         my ( $clevel, $len ) = get_atom( $level, $pos, \%lx );
         unless ($len) {

@@ -248,9 +248,9 @@ sub pview {
 
     # Build refs
     my %qh = ();
-    $qh{n}{k} = $orf->{songnum};
+    $qh{n}{k} = $orf->{number};
     $qh{n}{w} = 4;
-    $qh{n}{s} = "SNUM";
+    $qh{n}{s} = "NUMBER";
     $qh{t}{k} = $orf->{title};
     $qh{t}{s} = "TITLE";
     $qh{a}{k} = $orf->{artist};
@@ -344,7 +344,7 @@ Usage: gnupod-search [-h] [-m directory] File1 File2 ...
        --view=ialt         Modify output, default=ialt
                             t = title    a = artist   r = rating      p = iPod Path
                             l = album    g = genre    c = playcount   i = id
-                            u = UnixPath n = Songnum  G = podcastguid R = podcastrss
+                            u = UnixPath n = number  G = podcastguid R = podcastrss
                             d = dbid
        --separator=CHAR    Override tabular formatting and use CHAR as field separator
        --rename=KEY=VAL    Change tags on found songs. Example: --rename="ARTIST=Foo Bar"
@@ -476,7 +476,7 @@ Modify how the search results are displayed.  default=ialt  Options are:
 
 	t = title    a = artist   r = rating      p = iPod Path
 	l = album    g = genre    c = playcount   i = id
-	u = UnixPath n = Songnum  G = podcastguid R = podcastrss
+	u = UnixPath n = number  G = podcastguid R = podcastrss
 	d = dbid
 
 =back

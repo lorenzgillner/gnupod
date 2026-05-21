@@ -89,7 +89,7 @@ $PLDEF{sort}{6}  = 'bitrate';
 $PLDEF{sort}{7}  = 'genre';
 $PLDEF{sort}{8}  = 'fdesc';
 $PLDEF{sort}{9}  = 'changetime';
-$PLDEF{sort}{10} = 'songnum';
+$PLDEF{sort}{10} = 'number';
 $PLDEF{sort}{11} = 'size';
 $PLDEF{sort}{12} = 'time';
 $PLDEF{sort}{13} = 'year';
@@ -397,7 +397,7 @@ sub mk_mhit {
     $ret .= pack( "V", _icl( $file_hash{changetime} ) );    #Time changed
     $ret .= pack( "V", _icl( $file_hash{filesize} ) );      #filesize
     $ret .= pack( "V", _icl( $file_hash{time} ) );          #seconds of song
-    $ret .= pack( "V", _icl( $file_hash{songnum} ) )
+    $ret .= pack( "V", _icl( $file_hash{number} ) )
       ;    #nr. on CD .. we dunno use it (in this version)
     $ret .= pack( "V", _icl( $file_hash{songs} ) );      #songs on this CD
     $ret .= pack( "V", _icl( $file_hash{year} ) );       #the year
@@ -1354,7 +1354,7 @@ sub get_mhit {
     $o{changetime}  = get_int( $offset + 32, 4, $fd );
     $o{filesize}    = get_int( $offset + 36, 4, $fd );
     $o{time}        = get_int( $offset + 40, 4, $fd );
-    $o{songnum}     = get_int( $offset + 44, 4, $fd );
+    $o{number}     = get_int( $offset + 44, 4, $fd );
     $o{songs}       = get_int( $offset + 48, 4, $fd );
     $o{year}        = get_int( $offset + 52, 4, $fd );
     $o{bitrate}     = get_int( $offset + 56, 4, $fd );

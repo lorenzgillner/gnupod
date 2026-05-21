@@ -67,7 +67,7 @@ DOCUMENT ME!
 
 #                            t = title    a = artist   r = rating      p = iPod Path
 #                            l = album    g = genre    c = playcount   i = id
-#                            u = UnixPath n = Songnum  G = podcastguid R = podcastrss
+#                            u = UnixPath n = number  G = podcastguid R = podcastrss
 #                            d = dbid
     't' => 'title',
     'a' => 'artist',
@@ -78,7 +78,7 @@ DOCUMENT ME!
     'c' => 'playcount',
     'i' => 'id',
     'u' => 'unixpath',
-    'n' => 'songnum',
+    'n' => 'number',
     'G' => 'podcastguid',
     'R' => 'podcastrss',
     'd' => 'dbid_1',
@@ -194,7 +194,7 @@ DOCUMENT ME!
         'header'  => 'LENGTH(MS)',
         'width'   => 6,
     },
-    'songnum' => {
+    'number' => {
         'format'  => 'numeric',
         'content' => 'int',
         'help'    => 'track number of this song',
@@ -644,13 +644,13 @@ FILTERDEF ::= <attribute>["<"|">"|"="|"<="|">="|"=="|"!="|"~"|"~="|"=~"]<value>
 
 VIEWDEF ::= <attribute>[,<attribute>]...
   A comma separated list of fields that you want to see in the output.
-  Example: "album,songnum,artist,title"
+  Example: "album,number,artist,title"
   Default: "' . $defaultviewlist . '"
 
 SORTDEF ::= ["+"|"-"]<attribute>,[["+"|"-"]<attribute>] ...
   Is a comma separated list of fields to order the output by.
   A "-" (minus) reverses the sort order.
-  Example "-year,+artist,+album,+songnum"
+  Example "-year,+artist,+album,+number"
   Default "+addtime"
 
 Note: * String arguments (title/artist/album/etc) have to be UTF8 encoded!

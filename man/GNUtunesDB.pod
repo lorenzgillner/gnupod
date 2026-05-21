@@ -37,7 +37,7 @@ like the below.
 	lastplay="3326375095" lastskip="0" lyrics_flag="0" mediatype="1" movie_flag="0"
 	nocrossfade="0" path=":iPod_Control:Music:f15:g0__All_I_Really_Want.mp3" 
 	playcount="3" played_flag="1" postgap="0" pregap="0" rating="0" releasedate="0"
-	samplecount="0000000000000000" seasonnum="0" skipcount="0" songnum="1"
+	samplecount="0000000000000000" seasonnum="0" skipcount="0" number="1"
 	songs="0" soundcheck="0" srate="44100" starttime="0" stoptime="0"
 	time="284674" title="All I Really Want" volume="0" year="0" />
 
@@ -209,7 +209,7 @@ The season number of the track, for TV shows only.
 
 How many times this song has been skipped.
 
-=item songnum="1"
+=item number="1"
 
 Track number for song on its CD.  In this example this was the first song
 on the CD.  This information is taken from the MP3 header information and
@@ -275,7 +275,7 @@ should look much like the below.
 	podcastguid="GNUpodG3DE42" podcastrss="GNUpodR7652E" postgap="0"
 	pregap="0" rating="0" releasedate="0"
 	samplecount="0000000000000000" seasonnum="0" shuffleskip="1"
-	skipcount="0" songnum="0" songs="0" soundcheck="0" srate="44100"
+	skipcount="0" number="0" songs="0" soundcheck="0" srate="44100"
 	starttime="0" stoptime="0" time="4017841" title="cswdcb47 A Little
 	Less Evil" volume="0" year="2009" />
 

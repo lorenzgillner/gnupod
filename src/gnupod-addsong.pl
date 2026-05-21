@@ -37,16 +37,15 @@ use constant MEDIATYPE_PODCAST_AUDIO => 4;
 use constant MEDIATYPE_PODCAST_VIDEO => 6;
 
 use constant MACTIME => GNUpod::FooBar::MACTIME;
-use vars
-  qw(%opts %dupdb_normal %dupdb_lazy %dupdb_podcast $int_count %podcast_infos %podcast_channel_infos %per_file_info);
+use vars qw(%opts %dupdb_normal %dupdb_lazy %dupdb_podcast $int_count %podcast_infos %podcast_channel_infos %per_file_info);
 
 print "gnupod-addsong Version ###__VERSION__### (C) Adrian Ulrich\n";
 
-$int_count = 3;    #The user has to send INT (Ctrl+C) x times until we stop
+$int_count = 3;    # The user has to send INT (Ctrl+C) x times until we stop
 
 $opts{mount} = $ENV{IPOD_MOUNTPOINT};
 
-#Don't add xml and itunes opts.. we *NEED* the mount opt to be set..
+# Don't add xml and itunes opts.. we *NEED* the mount opt to be set..
 GetOptions(
     \%opts,                "version",
     "help|h",              "mount|m=s",
@@ -58,46 +57,44 @@ GetOptions(
     "set-rating=i",        "set-playcount=i",
     "set-bookmarkable|b",  "set-shuffleskip",
     "artwork=s",           "replaygain-album",
-    "set-songnum",         "playlist|p=s@",
+    "set-number",         "playlist|p=s@",
     "reencode|e=i",        "set-releasedate=s",
     "min-vol-adj=i",       "max-vol-adj=i",
     "playlist-is-podcast", "podcast-files-limit=i",
     "podcast-cache-dir=s", "podcast-artwork",
     "set-compilation"
-);
+    );
 
 GNUpod::FooBar::GetConfig(
     \%opts,
     {
         'decode'              => 's',
-        mount                 => 's',
-        duplicate             => 'b',
-        model                 => 's',
-        'replaygain-album'    => 'b',
-        'disable-v1'          => 'b',
-        'disable-v2'          => 'b',
-        'disable-ape-tag'     => 'b',
-        'set-songnum'         => 'b',
-        'min-vol-adj'         => 'i',
-        'max-vol-adj'         => 'i',
-        'automktunes'         => 'b',
-        'bgcolor'             => 's',
-        'podcast-files-limit' => 'i',
-        'podcast-cache-dir'   => 's',
-        'podcast-artwork'     => 'b'
+	    mount                 => 's',
+	    duplicate             => 'b',
+	    model                 => 's',
+	    'replaygain-album'    => 'b',
+	    'disable-v1'          => 'b',
+	    'disable-v2'          => 'b',
+	    'disable-ape-tag'     => 'b',
+	    'set-number'         => 'b',
+	    'min-vol-adj'         => 'i',
+	    'max-vol-adj'         => 'i',
+	    'automktunes'         => 'b',
+	    'bgcolor'             => 's',
+	    'podcast-files-limit' => 'i',
+	    'podcast-cache-dir'   => 's',
+	    'podcast-artwork'     => 'b'
     },
     "gnupod-addsong"
-);
+    );
 
-usage(
-"\n--decode needs 'pcm' 'mp3' 'aac' 'video' 'aacbm' or 'alac' -> '--decode=mp3'\n"
-  )
-  if $opts{decode}
-  && $opts{decode} !~ /^(mp3|video|aac|aacbm|pcm|alac|crashme)$/;
+usage("\n--decode needs 'pcm' 'mp3' 'aac' 'video' 'aacbm' or 'alac' -> '--decode=mp3'\n")
+    if $opts{decode} && $opts{decode} !~ /^(mp3|video|aac|aacbm|pcm|alac|crashme)$/;
+
 usage()   if $opts{help};
 version() if $opts{version};
 
-# convert releasedate to correct format
+# Convert releasedate to correct format
 if ( $opts{'set-releasedate'} ) {
     my $rdate = $opts{'set-releasedate'};
     $opts{'set-releasedate'} = int( Date::Parse::str2time($rdate) ) + MACTIME;
@@ -107,9 +104,8 @@ $SIG{'INT'} = \&handle_int;
 my @XFILES = ();
 
 if ( $opts{restore} ) {
-    print
-      "If you use --restore, you'll *lose* your playlists and cover artwork!\n";
-    print " Hit ENTER to continue or CTRL+C to abort\n\n";
+    print "If you use --restore, you'll *lose* your playlists and cover artwork!\n";
+    print "Hit ENTER to continue or CTRL+C to abort\n\n";
     <STDIN>;
     @XFILES = bsd_glob( "$opts{mount}/i*/Music/[Ff]*/*", GLOB_NOSORT );
 }
@@ -117,7 +113,7 @@ elsif ( $ARGV[0] eq "-" && @ARGV == 1 ) {
     print STDERR "Reading from STDIN, hit CTRL+D (EOF) when finished\n";
     while (<STDIN>) {
         chomp;
-        push( @XFILES, $_ );    #This eats memory, but it isn't so bad...
+        push( @XFILES, $_ );    # This eats memory, but it isn't so bad...
     }
 }
 else {
@@ -146,7 +142,6 @@ sub startup {
     my $fatal_error = 0;
 
     if ( $opts{restore} ) {
-
         # Some options don't mix well with --restore
         delete( $opts{artwork} );
         delete( $opts{playlist} );
@@ -161,97 +156,94 @@ sub startup {
             }
         }
         GNUpod::XMLhelper::doxml( $con->{xml} )
-          or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
+	    or usage("Failed to parse $con->{xml}, did you run gnupod-init?\n");
     }
 
     # Check volume adjustment options for sanity
-    my $min_vol_adj =
-      defined( $opts{'min-vol-adj'} ) ? int( $opts{'min-vol-adj'} ) : 0;
-    my $max_vol_adj =
-      defined( $opts{'max-vol-adj'} ) ? int( $opts{'max-vol-adj'} ) : 0;
+    my $min_vol_adj = defined( $opts{'min-vol-adj'} ) ? int( $opts{'min-vol-adj'} ) : 0;
+    my $max_vol_adj = defined( $opts{'max-vol-adj'} ) ? int( $opts{'max-vol-adj'} ) : 0;
 
-    usage(
-"Invalid settings: --min-vol-adj=$min_vol_adj > --max-vol-adj=$max_vol_adj\n"
-    ) if ( $min_vol_adj > $max_vol_adj );
+    usage("Invalid settings: --min-vol-adj=$min_vol_adj > --max-vol-adj=$max_vol_adj\n")
+		if ( $min_vol_adj > $max_vol_adj );
     usage("Invalid settings: --min-vol-adj=$min_vol_adj < -100\n")
-      if ( $min_vol_adj < -100 );
+		if ( $min_vol_adj < -100 );
     usage("Invalid settings: --max-vol-adj=$max_vol_adj > 100\n")
-      if ( $max_vol_adj > 100 );
+	    if ( $max_vol_adj > 100 );
 
-#We parsed the XML-Document
-#resolve_podcasts fetches new podcasts from http:// stuff and adds them to real_files
+    # We parsed the XML-Document
+    # Resolve_podcasts fetches new podcasts from http:// stuff and adds them to real_files
     my @real_files = resolve_podcasts(@argv_files);
     my $addcount   = 0;
 
-    if ( $opts{playlist} ) {    #Create this playlist
-        foreach my $xcpl ( @{ $opts{playlist} } ) {
+    if ( $opts{playlist} ) { # Create this playlist
+    	foreach my $xcpl ( @{ $opts{playlist} } ) {
             print "> Adding songs to Playlist '$xcpl'\n";
-            GNUpod::XMLhelper::addpl( $xcpl,
-                { podcast => $opts{'playlist-is-podcast'} } )
-              ;    #Fixme: this may printout a warning..
+            GNUpod::XMLhelper::addpl(
+				$xcpl,
+				{ podcast => $opts{'playlist-is-podcast'} }
+	    	);    # FIXME This may printout a warning ...
         }
     }
     elsif ( $opts{'playlist-is-podcast'} && ( scalar(@real_files) > 0 ) ) {
-        print
-"> Adding songs to Playlist '$per_file_info{$real_files[0]}->{album}'\n";
+        print "> Adding songs to Playlist '$per_file_info{$real_files[0]}->{album}'\n";
         push @{ $opts{playlist} }, $per_file_info{ $real_files[0] }->{album};
         GNUpod::XMLhelper::addpl(
             $per_file_info{ $real_files[0] }->{album},
             { podcast => $opts{'playlist-is-podcast'} }
-        );    #Fixme: this may printout a warning..
+	    );    # FIXME This may printout a warning ...
     }
 
-    #We are ready to copy each file..
+    # We are ready to copy each file ...
     foreach my $file (@real_files) {
+		# Skip all songs if user sent INT
+		next if !$int_count;
 
-        #Skip all songs if user sent INT
-        next if !$int_count;
+		# Skip all dirs
+		next if -d $file;
 
-        #Skip all dirs
-        next if -d $file;
-
-        #Get the filetype
-        my ( $fh, $media_h, $converter ) = GNUpod::FileMagic::wtf_is(
-            $file,
-            {
-                noIDv1  => $opts{'disable-v1'},
-                noIDv2  => $opts{'disable-v2'},
-                noAPE   => $opts{'disable-ape-tag'},
-                rgalbum => $opts{'replaygain-album'},
-                decode  => $opts{'decode'}
-            },
-            $con
-        );
+		# Get the filetype
+		my ( $fh, $media_h, $converter ) = GNUpod::FileMagic::wtf_is(
+			$file,
+			{
+				noIDv1  => $opts{'disable-v1'},
+				noIDv2  => $opts{'disable-v2'},
+				noAPE   => $opts{'disable-ape-tag'},
+				rgalbum => $opts{'replaygain-album'},
+				decode  => $opts{'decode'}
+			},
+			$con
+	    );
 
         unless ($fh) {
             warn "* [****] Skipping '$file', unknown file type\n";
             next;
         }
 
-        my $wtf_ftyp = $media_h->{ftyp};         #'codec' .. maybe ALAC
-        my $wtf_frmt = $media_h->{format};       #container ..maybe M4A
-        my $wtf_ext  = $media_h->{extension};    #Possible extensions (regexp!)
+        my $wtf_ftyp = $media_h->{ftyp};         # 'codec' ... maybe ALAC
+        my $wtf_frmt = $media_h->{format};       # container ... maybe M4A
+        my $wtf_ext  = $media_h->{extension};    # Possible extensions (regexp!)
 
-        #Force tags for current file
-        #This is only used for RSS ATM.
+        # Force tags for current file
+        # This is only used for RSS ATM.
         my $c_per_file_info = $per_file_info{$file};
         foreach ( keys(%$c_per_file_info) ) {
-            next unless lc($_) eq $_;   #lc keys are there to overwrite $fh keys
+            next unless lc($_) eq $_;   # lc keys are there to overwrite $fh keys
             if ( $_ eq "desc" ) {
                 $fh->{$_} = GNUpod::FileMagic::__merge_strings(
                     { joinby => "\n", wspace => "norm", case => "ignore" },
                     $c_per_file_info->{$_},
                     $fh->{$_}
-                );
+		    	);
             }
             else {
                 $fh->{$_} = $c_per_file_info->{$_};
             }
         }
-        $c_per_file_info->{ISPODCAST} ||= $opts{'playlist-is-podcast'}
-          ;   # Enforce podcast settings if we are going to create a pc-playlist
 
-        #wtf_is found a filetype, override data if needed
+		# Enforce podcast settings if we are going to create a pc-playlist
+        $c_per_file_info->{ISPODCAST} ||= $opts{'playlist-is-podcast'};
+
+        # `wtf_is` found a filetype, override data if needed
         $fh->{artist}       = $opts{'set-artist'} if $opts{'set-artist'};
         $fh->{album}        = $opts{'set-album'}  if $opts{'set-album'};
         $fh->{genre}        = $opts{'set-genre'}  if $opts{'set-genre'};
@@ -261,9 +253,8 @@ sub startup {
         $fh->{shuffleskip}  = 1 if defined( $opts{'set-shuffleskip'} );
         $fh->{playcount}    = $opts{'set-playcount'} if $opts{'set-playcount'};
         $fh->{title}        = $opts{'set-title'}     if $opts{'set-title'};
-        $fh->{songnum}      = 1 + $addcount          if $opts{'set-songnum'};
-        $fh->{releasedate}  = $opts{'set-releasedate'}
-          if $opts{'set-releasedate'};
+        $fh->{number}      = 1 + $addcount          if $opts{'set-number'};
+        $fh->{releasedate}  = $opts{'set-releasedate'} if $opts{'set-releasedate'};
 
         if ($awdb_image_prepared) {
             $fh->{has_artwork} = 1;
@@ -273,26 +264,26 @@ sub startup {
 
         $fh->{played_flag} = 0;
 
-        #Set the addtime to unixtime(now)+MACTIME (the iPod uses mactime)
-        #This breaks perl < 5.8 if we don't use int(time()) !
-        #Use fixed addtime for autotests
+        # Set the addtime to unixtime(now)+MACTIME (the iPod uses mactime)
+        # This breaks perl < 5.8 if we don't use int(time()) !
+        # Use fixed addtime for autotests
         $fh->{addtime} = int( $connection->{autotest} ? 42 : time() ) + MACTIME;
 
-       #Ugly workaround to avoid a warning while running mktunes:
-       #All (?) int-values returned by wtf_is won't go above 0xffffffff
-       #Thats fine because almost everything inside an mhit can handle this.
-       #But bpm and srate are limited to 0xffff
-       # -> We fix this silently to avoid ugly warnings while running mktunes
+		# Ugly workaround to avoid a warning while running mktunes:
+		# All (?) int-values returned by wtf_is won't go above 0xffffffff
+		# Thats fine because almost everything inside an mhit can handle this.
+		# But bpm and srate are limited to 0xffff
+		# -> We fix this silently to avoid ugly warnings while running mktunes
         $fh->{bpm} = 0xFFFF if ( defined( $fh->{bpm} ) && $fh->{bpm} > 0xFFFF );
         $fh->{srate} = 0xFFFF
-          if ( defined( $fh->{srate} ) && $fh->{srate} > 0xFFFF );
+	    if ( defined( $fh->{srate} ) && $fh->{srate} > 0xFFFF );
 
-        #Check for duplicates
+        # Check for duplicates
         if ( !$opts{duplicate} && ( my $dup = checkdup( $fh, $converter ) ) ) {
             print
-              "! [!!!!] '$file' is a duplicate of song $dup, skipping file\n";
+		"! [!!!!] '$file' is a duplicate of song $dup, skipping file\n";
             create_playlist_now( $opts{playlist}, $dup )
-              ;    #We also add duplicates to a playlist..
+		;    #We also add duplicates to a playlist..
             next;
         }
 
@@ -316,10 +307,10 @@ sub startup {
 
         if ($converter) {
             print
-"> Converting '$file' from $wtf_ftyp into $opts{decode}, please wait...\n";
+		"> Converting '$file' from $wtf_ftyp into $opts{decode}, please wait...\n";
             my $path_of_converted_file =
-              GNUpod::FileMagic::kick_convert( $converter, $opts{reencode},
-                $file, uc( $opts{decode} ), $con );
+		GNUpod::FileMagic::kick_convert( $converter, $opts{reencode},
+						 $file, uc( $opts{decode} ), $con );
             unless ($path_of_converted_file) {
                 print "! [!!!!] Could not convert $file into $opts{decode}\n";
                 next;
@@ -327,13 +318,13 @@ sub startup {
 
             #Ok, we got a converted file, fillout the gaps
             my ( $conv_fh, $conv_media_h ) =
-              GNUpod::FileMagic::wtf_is( $path_of_converted_file, undef, $con );
+		GNUpod::FileMagic::wtf_is( $path_of_converted_file, undef, $con );
 
             unless ($conv_fh) {
                 warn
-"* [****] Internal problem: $converter did not produce valid data.\n";
+		    "* [****] Internal problem: $converter did not produce valid data.\n";
                 warn
-"* [****] Something is wrong with $path_of_converted_file (file not deleted, debug it! :-) )\n";
+		    "* [****] Something is wrong with $path_of_converted_file (file not deleted, debug it! :-) )\n";
                 next;
             }
 
@@ -343,20 +334,20 @@ sub startup {
             $fh->{srate}    = $conv_fh->{srate};
             $fh->{filesize} = $conv_fh->{filesize};
             $wtf_frmt =
-              $conv_media_h->{format};    #Set the new format (-> container)
+		$conv_media_h->{format};    #Set the new format (-> container)
             $wtf_ext = $conv_media_h->{extension}
-              ;    #Set the new possible extension, but keep ftype (=codec)
+	    ;    #Set the new possible extension, but keep ftype (=codec)
             $file = $path_of_converted_file;    #Point $file to new file
             $per_file_info{$file}->{UNLINK} =
-              1;    #Request unlink of this file after adding
+		1;    #Request unlink of this file after adding
         }
         elsif ( defined( $opts{reencode} ) ) {
             print "> ReEncoding '$file' with quality "
-              . int( $opts{reencode} )
-              . ", please wait...\n";
+		. int( $opts{reencode} )
+		. ", please wait...\n";
             my $path_of_converted_file =
-              GNUpod::FileMagic::kick_reencode( $opts{reencode}, $file,
-                $wtf_frmt, $con );
+		GNUpod::FileMagic::kick_reencode( $opts{reencode}, $file,
+						  $wtf_frmt, $con );
 
             if ($path_of_converted_file) {
 
@@ -366,14 +357,14 @@ sub startup {
                     #Ok, output is smaller, we are going to use thisone
                     $file = $path_of_converted_file;    # Replace the file path
                     $per_file_info{$file}->{UNLINK} = 1
-                      ; # Request unlinking file (as we are going to use the copy)
+			; # Request unlinking file (as we are going to use the copy)
                 }
                 else {
                     #Nope.. input was smaller, converting was silly..
                     print
-"* [****] Reencoded output bigger than input! Adding source file\n";
+			"* [****] Reencoded output bigger than input! Adding source file\n";
                     unlink($path_of_converted_file)
-                      or warn "Could not unlink $path_of_converted_file, $!\n";
+			or warn "Could not unlink $path_of_converted_file, $!\n";
 
                     #Ok, do nothing!
                 }
@@ -398,7 +389,7 @@ sub startup {
                 extension => $wtf_ext,
                 keepfile  => $opts{restore}
             }
-        );
+	    );
 
         if ( !defined($target) ) {
             warn "*** FATAL *** Skipping '$file' , no target found!\n";
@@ -415,11 +406,11 @@ sub startup {
                 Unicode::String::utf8( $fh->{title} )->utf8,
                 Unicode::String::utf8( $fh->{album} )->utf8,
                 Unicode::String::utf8( $fh->{artist} )->utf8
-            );
+		);
 
             my $id =
-              GNUpod::XMLhelper::mkfile( { file => $fh }, { addid => 1 } )
-              ;    #Try to add an id
+		GNUpod::XMLhelper::mkfile( { file => $fh }, { addid => 1 } )
+		;    #Try to add an id
             create_playlist_now( $opts{playlist}, $id );
             $addcount++;    #Inc. addcount
         }
@@ -437,7 +428,7 @@ sub startup {
     if ( $opts{playlist} || $addcount ) {    #We have to modify the xmldoc
         print "> Writing new XML File, added $addcount file(s)\n";
         GNUpod::XMLhelper::writexml( $con,
-            { automktunes => $opts{automktunes} } );
+				     { automktunes => $opts{automktunes} } );
     }
     $AWDB->WriteArtworkDb;
     print "\n Done\n";
@@ -450,14 +441,14 @@ sub add_image_to_awdb {
     my ($filename) = @_;
     if ($awdb_image_prepared) {
         warn
-"! [****] Skipping $filename because there is already one prepared.\n";
+	    "! [****] Skipping $filename because there is already one prepared.\n";
         return 0;
     }
     my $count = $AWDB->PrepareImage(
         File    => $filename,
         Model   => $opts{model},
         bgcolor => $opts{bgcolor}
-    );
+	);
     if ($count) {
         ;
         $AWDB->LoadArtworkDb or die "Failed to load artwork database\n";
@@ -476,8 +467,8 @@ sub create_playlist_now {
             #Broken-by-design: We don't have a ID-Pool for playlists..
             #-> Create a fake_entry
             my $fake_entry =
-              GNUpod::XMLhelper::mkfile( { add => { id => $id } },
-                { return => 1 } );
+		GNUpod::XMLhelper::mkfile( { add => { id => $id } },
+					   { return => 1 } );
             my $found = 0;
             foreach ( GNUpod::XMLhelper::getpl_content($plname) ) {
                 if ( $_ eq $fake_entry ) {
@@ -486,8 +477,8 @@ sub create_playlist_now {
                 }
             }
             GNUpod::XMLhelper::mkfile( { add => { id => $id } },
-                { "plname" => $plname } )
-              unless $found;
+				       { "plname" => $plname } )
+		unless $found;
         }
     }
 }
@@ -495,18 +486,18 @@ sub create_playlist_now {
 ## XML Handlers ##
 sub newfile {
     $dupdb_normal{ lc( $_[0]->{file}->{title} )
-          . "/$_[0]->{file}->{bitrate}/$_[0]->{file}->{time}/$_[0]->{file}->{filesize}"
+		       . "/$_[0]->{file}->{bitrate}/$_[0]->{file}->{time}/$_[0]->{file}->{filesize}"
     } = $_[0]->{file}->{id} || -1;
 
-#This is worse than _normal, but the only way to detect dups *before* re-encoding...
+    #This is worse than _normal, but the only way to detect dups *before* re-encoding...
     $dupdb_lazy{ lc( $_[0]->{file}->{title} || "" ) . "/"
-          . lc( $_[0]->{file}->{album}  || "" ) . "/"
-          . lc( $_[0]->{file}->{artist} || "" ) } = $_[0]->{file}->{id} || -1;
+		     . lc( $_[0]->{file}->{album}  || "" ) . "/"
+		     . lc( $_[0]->{file}->{artist} || "" ) } = $_[0]->{file}->{id} || -1;
 
     #Add podcast infos if it is an podcast
     if ( $_[0]->{file}->{podcastguid} ) {
         $dupdb_podcast{ $_[0]->{file}->{podcastguid} . "\0"
-              . $_[0]->{file}->{podcastrss} }++;
+			    . $_[0]->{file}->{podcastrss} }++;
     }
     $AWDB->KeepImage( $_[0]->{file}->{dbid_1} );
     GNUpod::XMLhelper::mkfile( $_[0], { addid => 1 } );
@@ -535,43 +526,43 @@ sub PODCAST_fetch_media {
 
         my @cachefilecandidates = ();
         my $deepcachefile       = $opts{'podcast-cache-dir'} . "/"
-          . PODCAST_get_sane_path_from_url( $url, "" );
+	    . PODCAST_get_sane_path_from_url( $url, "" );
         push @cachefilecandidates, $deepcachefile if $deepcachefile;
 
         my $flatcachefile =
-          $opts{'podcast-cache-dir'} . "/"
-          . PODCAST_strictly_sanitze_path_element( ( split( /\//, $url ) )[-1],
-            "cachefile" );
+	    $opts{'podcast-cache-dir'} . "/"
+	    . PODCAST_strictly_sanitze_path_element( ( split( /\//, $url ) )[-1],
+						     "cachefile" );
         push @cachefilecandidates, $flatcachefile;
 
         foreach my $cachefile (@cachefilecandidates) {
             if ( -e $cachefile && -r $cachefile ) {
                 my $sizedelta = int($length) - int( ( stat($cachefile) )[7] );
                 if (   ( $length != 0 )
-                    && ( abs($sizedelta) > ( $length * 0.05 ) ) )
+		       && ( abs($sizedelta) > ( $length * 0.05 ) ) )
                 {
                     print "* [HTTP] Not using cached file $cachefile ... ("
-                      . abs($sizedelta)
-                      . " bytes too "
-                      . ( $sizedelta > 0 ? "small" : "big" ) . ")\n";
+			. abs($sizedelta)
+			. " bytes too "
+			. ( $sizedelta > 0 ? "small" : "big" ) . ")\n";
                 }
                 else {
                     print "* [HTTP] Using cached file $cachefile (size:"
-                      . ( stat($cachefile) )[7] . ") ..."
-                      . ( ( $length != 0 && $sizedelta )
-                        ? " (even though it is "
-                          . abs($sizedelta)
-                          . " bytes too "
-                          . ( $sizedelta > 0 ? "small" : "big" ) . ")"
-                        : "" ) . "\n";
+			. ( stat($cachefile) )[7] . ") ..."
+			. ( ( $length != 0 && $sizedelta )
+			    ? " (even though it is "
+			    . abs($sizedelta)
+			    . " bytes too "
+			    . ( $sizedelta > 0 ? "small" : "big" ) . ")"
+			    : "" ) . "\n";
                     return { file => $cachefile, status => 0 };
                 }
             }
         }
         print "* [HTTP] Downloading $url ...\n";
         my $return =
-          system( "curl", "-s", "-L", "--create-dirs", "-o", $deepcachefile,
-            $url );
+	    system( "curl", "-s", "-L", "--create-dirs", "-o", $deepcachefile,
+		    $url );
         return { file => $deepcachefile, status => $return };
     }
     else {
@@ -584,7 +575,7 @@ sub PODCAST_strictly_sanitze_path_element {
     $name =~ s/[^.0-9a-zA-z()_-]/_/g;    # limit valid character set
     $name =~ s/^[.]*//g;                 #remove leading dots
     $name =~
-      s/[.]*$//g;    #remove trailing dots (cause problems on windows i heard
+	s/[.]*$//g;    #remove trailing dots (cause problems on windows i heard
     $name = $default unless $name;    #default if empty
     return $name;
 }
@@ -592,12 +583,12 @@ sub PODCAST_strictly_sanitze_path_element {
 sub PODCAST_get_sane_path_from_url {
     my ( $uri, $default ) = @_;
     my ( $scheme, $authority, $path, $query, $fragment ) = $uri =~
-      m|(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|;
+	m|(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?|;
     my @pathelements      = ( $authority, split( /\//, $path ) );
     my @cleanpathelements = ();
     foreach my $pe (@pathelements) {
         push @cleanpathelements,
-          PODCAST_strictly_sanitze_path_element( $pe, '' );
+	    PODCAST_strictly_sanitze_path_element( $pe, '' );
     }
     my $cleanpath = join( "/", @cleanpathelements );
     $cleanpath =~ s|/[/]+|/|g;    # collaps multiple /
@@ -617,15 +608,15 @@ sub podcastStart {
     my $hashref_key = $hr->{Base};
     undef( $hr->{cdatabuffer} );
     if (   $hr->{Context}[-2] eq "rss"
-        && $hr->{Context}[-1] eq "channel"
-        && $el eq "item" )
+	   && $hr->{Context}[-1] eq "channel"
+	   && $el eq "item" )
     {
         push( @{ $podcast_infos{$hashref_key} }, {} );
     }
     elsif ($hr->{Context}[-3] eq "rss"
-        && $hr->{Context}[-2] eq "channel"
-        && $hr->{Context}[-1] eq "item"
-        && @it )
+	   && $hr->{Context}[-2] eq "channel"
+	   && $hr->{Context}[-1] eq "item"
+	   && @it )
     {
         my $xref = GNUpod::XMLhelper::mkh( $el, @it );
         ${ $podcast_infos{$hashref_key} }[-1]->{$el} ||= $xref->{$el};
@@ -649,12 +640,12 @@ sub podcastEnd {
     my ( $hr, $el ) = @_;
     my $hashref_key = $hr->{Base};
     if (   defined( $hr->{cdatabuffer} )
-        && $hr->{Context}[-3] eq "rss"
-        && $hr->{Context}[-2] eq "channel"
-        && $hr->{Context}[-1] eq "item" )
+	   && $hr->{Context}[-3] eq "rss"
+	   && $hr->{Context}[-2] eq "channel"
+	   && $hr->{Context}[-1] eq "item" )
     {
         ${ $podcast_infos{$hashref_key} }[-1]->{$el}->{"\0"} ||=
-          $hr->{cdatabuffer};
+	    $hr->{cdatabuffer};
     }
     undef( $hr->{cdatabuffer} );
 }
@@ -670,18 +661,18 @@ sub podcastChannelStart {
     my $hashref_key = $hr->{Base};
     $hr->{cdatabuffer} = undef;
     if (   $hr->{Context}[-1] eq "rss"
-        && $el eq "channel" )
+	   && $el eq "channel" )
     {
         push( @{ $podcast_channel_infos{$hashref_key} }, {} );
     }
     elsif ($hr->{Context}[-2] eq "rss"
-        && $hr->{Context}[-1] eq "channel"
-        && $el ne "item" )
+	   && $hr->{Context}[-1] eq "channel"
+	   && $el ne "item" )
     {
         if (@it) {
             my $xref = GNUpod::XMLhelper::mkh( $el, @it );
             ${ $podcast_channel_infos{$hashref_key} }[-1]->{$el} ||=
-              $xref->{$el};
+		$xref->{$el};
         }
     }
 }
@@ -703,23 +694,23 @@ sub podcastChannelEnd {
     my ( $hr, $el ) = @_;
     my $hashref_key = $hr->{Base};
     if (   defined( $hr->{cdatabuffer} )
-        && $hr->{Context}[-2] eq "rss"
-        && $hr->{Context}[-1] eq "channel"
-        && $el ne "item" )
+	   && $hr->{Context}[-2] eq "rss"
+	   && $hr->{Context}[-1] eq "channel"
+	   && $el ne "item" )
     {
         ${ $podcast_channel_infos{$hashref_key} }[-1]->{$el}->{"\0"} ||=
-          $hr->{cdatabuffer};
+	    $hr->{cdatabuffer};
     }
     elsif ( defined( $hr->{cdatabuffer} )
-        && $hr->{Context}[-3] eq "rss"
-        && $hr->{Context}[-2] eq "channel"
-        && $hr->{Context}[-1] ne "item" )
+	    && $hr->{Context}[-3] eq "rss"
+	    && $hr->{Context}[-2] eq "channel"
+	    && $hr->{Context}[-1] ne "item" )
     {
         ${ $podcast_channel_infos{$hashref_key} }[-1]->{ $hr->{Context}[-1] }
-          ->{$el}->{"\0"} ||= $hr->{cdatabuffer};
+	->{$el}->{"\0"} ||= $hr->{cdatabuffer};
     }
     $hr->{cdatabuffer} =
-      undef;    # make sure it doesn't get added to the parent element as well
+	undef;    # make sure it doesn't get added to the parent element as well
 }
 
 #############################################################
@@ -739,17 +730,17 @@ sub resolve_podcasts {
 
             unless ($env_is_okay) {
                 warn
-"! [!!!!] WARNING: This podcast may not appear on your iPod because you did not specify a podcast-playlist to use.\n";
+		    "! [!!!!] WARNING: This podcast may not appear on your iPod because you did not specify a podcast-playlist to use.\n";
                 warn
-"! [!!!!]          I will try to use the podcast's title as a playlist name but there's no guarantee it will work out.\n";
+		    "! [!!!!]          I will try to use the podcast's title as a playlist name but there's no guarantee it will work out.\n";
                 warn
-"! [!!!!]          Please use the options '--playlist' and '--playlist-is-podcast' while fetching podcasts.\n";
+		    "! [!!!!]          Please use the options '--playlist' and '--playlist-is-podcast' while fetching podcasts.\n";
             }
 
             my $pcrss = PODCAST_fetch( $cf, "/tmp/gnupodcast$i" );
             if ( $pcrss->{status} or ( !( -f $pcrss->{file} ) ) ) {
                 warn
-"! [HTTP] Failed to download the file '$cf', curl exitcode: $pcrss->{status}\n";
+		    "! [HTTP] Failed to download the file '$cf', curl exitcode: $pcrss->{status}\n";
                 next;
             }
 
@@ -761,7 +752,7 @@ sub resolve_podcasts {
                         Char  => \&podcastChar,
                         End   => \&podcastEnd
                     }
-                );
+		    );
                 $px->parsefile( $pcrss->{file} );
                 my $py = new XML::Parser(
                     Handlers => {
@@ -769,30 +760,30 @@ sub resolve_podcasts {
                         Char  => \&podcastChannelChar,
                         End   => \&podcastChannelEnd
                     }
-                );
+		    );
                 $py->parsefile( $pcrss->{file} );
             };
             if ($@) {
                 warn "! [HTTP] Error while parsing XML file "
-                  . $pcrss->{file}
-                  . ". File kept for examination. : $@\n";
+		    . $pcrss->{file}
+		. ". File kept for examination. : $@\n";
                 next;
             }
             if ( !defined( $podcast_infos{ $pcrss->{file} } ) ) {
                 warn "! [HTTP] No item found while parsing XML file "
-                  . $pcrss->{file}
-                  . ". File kept for examination.\n";
+		    . $pcrss->{file}
+		. ". File kept for examination.\n";
                 next;
             }
             unlink( $pcrss->{file} )
-              or warn "Could not unlink $pcrss->{file}, $!\n";
+		or warn "Could not unlink $pcrss->{file}, $!\n";
 
             #Limit the number of podcasts to dowload.
             my @pods = @{ $podcast_infos{ $pcrss->{file} } };
             my $flimit =
-              defined( ( $opts{'podcast-files-limit'} ) )
-              ? int( $opts{'podcast-files-limit'} )
-              : 0;
+		defined( ( $opts{'podcast-files-limit'} ) )
+		? int( $opts{'podcast-files-limit'} )
+		: 0;
             if ( ( $flimit > 0 ) && ( $flimit < $#pods + 1 ) ) {
                 splice( @pods, $flimit );
             }
@@ -814,29 +805,29 @@ sub resolve_podcasts {
     foreach my $key ( keys(%podcast_infos) ) {
         my $cref    = $podcast_infos{$key};
         my $channel = $podcast_channel_infos{$key}[0]
-          ;    # assuming for now that there's only one channel in the feed
-               # get the artwork
+	    ;    # assuming for now that there's only one channel in the feed
+	# get the artwork
         if ( defined( $opts{'podcast-artwork'} ) ) {
             my $channel_image_url = (
-                     $channel->{"itunes:image"}->{"href"}
-                  or $channel->{"image"}->{"url"}->{"\0"}
-            );
+		$channel->{"itunes:image"}->{"href"}
+		or $channel->{"image"}->{"url"}->{"\0"}
+		);
             if ($channel_image_url) {
                 my $channel_image = PODCAST_fetch_media( $channel_image_url,
-                    "/tmp/gnupodcast_image", 0 );
+							 "/tmp/gnupodcast_image", 0 );
                 if ( $channel_image->{status}
-                    or ( !( -f $channel_image->{file} ) ) )
+		     or ( !( -f $channel_image->{file} ) ) )
                 {
                     warn "! [HTTP] Failed to download $channel_image to "
-                      . $channel_image->{file} . "\n";
+			. $channel_image->{file} . "\n";
                 }
                 else {
                     add_image_to_awdb( $channel_image->{file} );
                     if ( !$opts{'podcast-cache-dir'} ) {
                         unlink( $channel_image->{file} )
-                          or warn "Could not unlink "
-                          . $channel_image->{file}
-                          . ", $!\n";
+			    or warn "Could not unlink "
+			    . $channel_image->{file}
+			. ", $!\n";
                     }
                 }
             }
@@ -845,11 +836,11 @@ sub resolve_podcasts {
         foreach my $podcast_item (@$cref) {
             my $c_title  = $podcast_item->{title}->{"\0"};
             my $c_author = (
-                     $podcast_item->{"itunes:author"}->{"\0"}
-                  or $podcast_item->{author}->{"\0"}
-                  or $channel->{"itunes:author"}->{"\0"}
-                  or $channel->{"managingEditor"}->{"\0"}
-            );
+		$podcast_item->{"itunes:author"}->{"\0"}
+		or $podcast_item->{author}->{"\0"}
+		or $channel->{"itunes:author"}->{"\0"}
+		or $channel->{"managingEditor"}->{"\0"}
+		);
             my $c_album = $channel->{"title"}->{"\0"};
             my $c_rdate = $podcast_item->{pubDate}->{"\0"};
             my $c_desc  = $podcast_item->{description}->{"\0"};
@@ -861,43 +852,43 @@ sub resolve_podcasts {
             my $possible_dupdb_entry = $c_guid . "\0" . $c_podcastrss;
 
             if (   length($c_guid) == 0
-                or length($c_podcastrss) == 0
-                or length($c_url) == 0 )
+		   or length($c_podcastrss) == 0
+		   or length($c_url) == 0 )
             {
                 warn
-"! [HTTP] '$c_podcastrss' is an invalid podcast item (No URL/RSS?)\n";
+		    "! [HTTP] '$c_podcastrss' is an invalid podcast item (No URL/RSS?)\n";
                 next;
             }
             elsif ( $dupdb_podcast{$possible_dupdb_entry} ) {
                 warn
-"! [HTTP] Podcast $c_url ($c_title) exists, no need to download this file\n";
+		    "! [HTTP] Podcast $c_url ($c_title) exists, no need to download this file\n";
                 next;
             }
             my $rssmedia = PODCAST_fetch_media( $c_url, "/tmp/gnupodcast_media",
-                $podcast_item->{enclosure}->{length} );
+						$podcast_item->{enclosure}->{length} );
             if ( $rssmedia->{status} or ( !( -f $rssmedia->{file} ) ) ) {
                 warn
-                  "! [HTTP] Failed to download $c_url to $rssmedia->{file}\n";
+		    "! [HTTP] Failed to download $c_url to $rssmedia->{file}\n";
                 next;
             }
 
             $per_file_info{ $rssmedia->{file} }->{UNLINK} = 1
-              unless $opts{'podcast-cache-dir'}
-              ;    # Remove tempfile if not caching
+		unless $opts{'podcast-cache-dir'}
+	    ;    # Remove tempfile if not caching
             $per_file_info{ $rssmedia->{file} }->{ISPODCAST} =
-              1;    # Triggers mediatype fix
+		1;    # Triggers mediatype fix
 
             # Set information/tags from XML-File
             $per_file_info{ $rssmedia->{file} }->{podcastguid} = $c_guid;
             $per_file_info{ $rssmedia->{file} }->{podcastrss}  = $c_podcastrss;
             $per_file_info{ $rssmedia->{file} }->{title} = $c_title if $c_title;
             $per_file_info{ $rssmedia->{file} }->{artist} = $c_author
-              if $c_author;
+		if $c_author;
             $per_file_info{ $rssmedia->{file} }->{album} = $c_album if $c_album;
             $per_file_info{ $rssmedia->{file} }->{desc}  = $c_desc  if $c_desc;
             $per_file_info{ $rssmedia->{file} }->{releasedate} =
-              int( Date::Parse::str2time($c_rdate) ) + MACTIME
-              if $c_rdate;
+		int( Date::Parse::str2time($c_rdate) ) + MACTIME
+		if $c_rdate;
 
             push( @files, $rssmedia->{file} );
         }
@@ -914,12 +905,12 @@ sub checkdup {
     my ( $fh, $from_lazy ) = @_;
 
     return $dupdb_lazy{ lc( $_[0]->{title} ) . "/"
-          . lc( $_[0]->{album} ) . "/"
-          . lc( $_[0]->{artist} ) }
-      if $from_lazy;
+			    . lc( $_[0]->{album} ) . "/"
+			    . lc( $_[0]->{artist} ) }
+    if $from_lazy;
 
     return $dupdb_normal{ lc( $fh->{title} )
-          . "/$fh->{bitrate}/$fh->{time}/$fh->{filesize}" };
+			      . "/$fh->{bitrate}/$fh->{time}/$fh->{filesize}" };
 }
 
 ################################################################
@@ -927,7 +918,7 @@ sub checkdup {
 sub handle_int {
     if ($int_count) {
         warn
-"RECEIVED SIGINT (CTRL+C): gnupod-addsong is still working! hit CTRL+C again $int_count time(s) to quit.\n";
+	    "RECEIVED SIGINT (CTRL+C): gnupod-addsong is still working! hit CTRL+C again $int_count time(s) to quit.\n";
         $int_count--;
     }
     else {
@@ -969,7 +960,7 @@ Usage: gnupod-addsong [-h] [-m directory] File1 File2 ...
    -g  --set-genre=string           Set Genre  (Override ID3 Tag)
        --set-rating=int             Set Rating
        --set-playcount=int          Set Playcount
-       --set-songnum                Override 'Songnum/Tracknum' field
+       --set-number                Override 'number/Tracknum' field
    -b  --set-bookmarkable           Set this song as bookmarkable (= Remember position)
        --set-shuffleskip            Exclude this file in shuffle-mode
        --set-compilation            Mark songs as being part of a compilation
@@ -1172,9 +1163,9 @@ Set Rating.  (20 = 1 star, 40 = 2 stars, ... 100 = 5 stars).
 
 Set Playcount (how many times the song has been played).
 
-=item --set-songnum
+=item --set-number
 
-Override 'Songnum/Tracknum' field.
+Override 'number/Tracknum' field.
 
 =item -b, --set-bookmarkable
 

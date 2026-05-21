@@ -74,7 +74,7 @@ Order results according to SORTDEF
 SORTDEF ::= ["+"|"-"]<attribute>,[["+"|"-"]<attribute>] ...
   Is a comma separated list of fields to order the results by.
   A "-" (minus) reverses the sort order.
-  Example "-year,+artist,+album,+songnum"
+  Example "-year,+artist,+album,+number"
   Default "+addtime"
 
 =item -v, --view VIEWDEF
@@ -83,7 +83,7 @@ Show song attributes listed in VIEWDEF
 
 VIEWDEF ::= <attribute>[,<attribute>]...
   A comma separated list of fields that you want to see in the output.
-  Example: "album,songnum,artist,title"
+  Example: "album,number,artist,title"
   Default: "id,artist,album,title"
 
 
