@@ -6,6 +6,15 @@ With GNUpod, you can use your iPod on GNU/Linux and
 many other Operating Systems (with a useable Port
 of Perl5 + FireWire / USB2 Support)
 
+## Dependencies
+
+Use `cpanm`:
+
+```sh
+curl -L https://cpanmin.us | perl - --sudo App::cpanminus
+cpanm --installdeps .
+```
+
 ## Installing GNUpod
 
 Running
@@ -13,7 +22,7 @@ Running
 ```sh
 autoconf
 ./configure
-make install
+sudo make install
 ```
 
 should be enough.
